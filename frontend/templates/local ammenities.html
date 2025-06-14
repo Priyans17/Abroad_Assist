@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {%load static%}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Amenities | Abroad Assist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        :root {
+            --text-01: #45413E;
+            --light-01: #F9F9F9;
+            --light-02: #FFFFFF;
+            --brand-01: #DB7F67;
+            --brand-02: #F4CFC6;
+            --card-hover: 0px 8px 30px rgba(0, 0, 0, 0.12);
+            --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-timing: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            background: var(--light-01);
+            color: var(--text-01);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: var(--light-02);
+            box-shadow: var(--card-shadow);
+            padding: 2rem 1rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .sidebar-logo span {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu a {
+            text-decoration: none;
+            color: var(--text-01);
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: var(--brand-02);
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu .material-icons {
+            margin-right: 10px;
+        }
+
+        main {
+            margin-left: 250px;
+            padding: 2rem;
+            width: calc(100% - 250px);
+        }
+
+        #hero {
+            background: linear-gradient(135deg, var(--brand-02), var(--brand-01));
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            color: var(--light-02);
+        }
+
+        #hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        #hero p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--light-02);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-01);
+        }
+
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: var(--hover-timing);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--brand-01);
+            box-shadow: 0 0 0 2px rgba(219, 127, 103, 0.2);
+        }
+
+        button {
+            background: var(--text-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        button:hover {
+            background: var(--brand-01);
+            transform: translateY(-2px);
+        }
+
+        .amenities-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .amenity-card {
+            background: var(--light-02);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--hover-timing);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .amenity-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .amenity-card:hover {
+            box-shadow: var(--card-hover);
+            transform: translateY(-5px);
+        }
+
+        .amenity-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .amenity-card-content {
+            padding: 1.5rem;
+        }
+
+        .amenity-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-01);
+            margin-bottom: 0.5rem;
+        }
+
+        .amenity-card p {
+            color: var(--text-01);
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .amenity-card .price {
+            font-weight: 600;
+            color: var(--brand-01);
+        }
+
+        .amenity-card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            color: var(--brand-01);
+            cursor: pointer;
+            transition: var(--hover-timing);
+            font-size: 1.5rem;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .view-details-btn {
+            background: var(--brand-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        .view-details-btn:hover {
+            background: var(--text-01);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .favorites-container {
+            background: var(--light-02);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .favorites-container h3 {
+            color: var(--brand-01);
+            margin-bottom: 1rem;
+        }
+
+        .favorites-list {
+            list-style-type: none;
+        }
+
+        .favorites-list li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-favorite {
+            background: none;
+            border: none;
+            color: var(--text-01);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .social-links a {
+            color: var(--brand-01);
+            text-decoration: none;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .stars {
+            color: gold;
+            margin-right: 5px;
+        }
+
+        .reviews {
+            margin-top: 20px;
+        }
+
+        .review {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .review-author {
+            font-weight: bold;
+        }
+
+        .review-date {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .filter-container {
+                flex-direction: column;
+            }
+
+            .amenities-list {
+                grid-template-columns: 1fr;
+            }
+
+            #hero h1 {
+                font-size: 2rem;
+            }
+
+            #hero p {
+                font-size: 1rem;
+            }
+        }
+
+        .sign-out {
+            margin-top: auto;
+            padding: 0.5rem;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sign-out:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://img.icons8.com/color/48/000000/airplane-mode-on--v1.png" alt="Airplane Logo">
+            <span>Abroad Assist</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard"><span class="material-icons">dashboard</span>Dashboard</a></li>
+            <li><a href="university-selection"><span class="material-icons">school</span>University Selection</a></li>
+            <li><a href="housing-options"><span class="material-icons">home</span>Housing Options</a></li>
+            <li><a href="travelexpense"><span class="material-icons">flight</span>Travel Expenses</a></li>
+            <li><a href="#" class="active"><span class="material-icons">location_city</span>Local Amenities</a></li>
+            <li><a href="tiffin"><span class="material-icons">restaurant</span>Tiffin Services</a></li>
+            <li><a href="health"><span class="material-icons">local_hospital</span>Healthcare</a></li>
+
+        </ul>
+        <a href="/logout" class="sign-out">Sign Out</a>
+    </aside>
+
+    <main>
+        <section id="hero">
+            <h1>Local Amenities</h1>
+            <p>Discover essential services and amenities near top UK universities</p>
+        </section>
+
+        <div id="map"></div>
+
+        <section id="favorites" class="favorites-container">
+            <h3>Your Favorites</h3>
+            <ul id="favorites-list" class="favorites-list"></ul>
+        </section>
+
+        <section id="amenities-selection">
+            <h2>Local Amenities Selection</h2>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="university">University:</label>
+                    <select id="university">
+                        <option value="">All Universities</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="amenity-type">Amenity Type:</label>
+                    <select id="amenity-type">
+                        <option value="">All Types</option>
+                        <option value="restaurant">Indian Restaurants</option>
+                        <option value="grocery">Grocery Shops</option>
+                        <option value="supermarket">Supermarkets</option>
+                        <option value="delivery">Food Delivery Apps</option>
+                        <option value="cafeteria">Cafeterias</option>
+                        <option value="meal-delivery">Meal Delivery Services</option>
+                        <option value="cheap-restaurant">Cheap Restaurants</option>
+                        <option value="money-services">Money Services</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="price">Max Price (£):</label>
+                    <input type="number" id="price" min="0" step="1">
+                </div>
+                <button id="apply-filters">Apply Filters</button>
+            </div>
+            <div id="amenities-list" class="amenities-list">
+                <!-- Amenity cards will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <div id="amenityModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="amenity-details"></div>
+        </div>
+    </div>
+
+    <script>
+        const amenities = [
+            {
+                id: 1,
+                name: "Taj Mahal",
+                type: "restaurant",
+                university: "University of Oxford",
+                description: "Authentic Indian cuisine with student discounts",
+                price: 15,
+                address: "23 High St, Oxford OX1 4AB",
+                website: "https://tajmahalkingcross.co.uk/",
+                phone: "+44 1865 244740",
+                hours: "Mon-Sun: 11:00-23:00",
+                image: "taj.png",
+                location: { lat: 51.7520, lng: -1.2577 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/TajMahalOxford",
+                    instagram: "https://www.instagram.com/tajmahaloxford",
+                    twitter: "https://twitter.com/TajMahalOxford"
+                },
+                rating: 4.5,
+                reviews: [
+                    { author: "John D.", date: "2023-05-15", text: "Great food and atmosphere!" },
+                    { author: "Sarah M.", date: "2023-04-22", text: "Authentic Indian cuisine, loved it!" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Spice Bazaar",
+                type: "grocery",
+                university: "University of Cambridge",
+                description: "Indian grocery store with a wide range of products",
+                price: 10,
+                address: "12 Mill Rd, Cambridge CB1 2AD",
+                website: "https://www.spicebazaarcambridge.co.uk",
+                phone: "+44 1223 576149",
+                hours: "Mon-Sat: 09:00-20:00, Sun: 10:00-18:00",
+                image: "sb1.jpg",
+                location: { lat: 52.2015, lng: 0.1374 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/SpiceBazaarCambridge",
+                    instagram: "https://www.instagram.com/spicebazaarcambridge"
+                },
+                rating: 4.2,
+                reviews: [
+                    { author: "Emily L.", date: "2023-05-10", text: "Great selection of spices and Indian groceries!" },
+                    { author: "Mike R.", date: "2023-04-30", text: "Friendly staff and reasonable prices." }
+                ]
+            },
+            {
+                id: 3,
+                name: "Tesco Express",
+                type: "supermarket",
+                university: "Imperial College London",
+                description: "Convenient supermarket for everyday essentials",
+                price: 5,
+                address: "43 Gloucester Rd, South Kensington, London SW7 4PP",
+                website: "https://www.tesco.com/store-locator/uk/?bid=2721",
+                phone: "+44 345 677 9388",
+                hours: "Mon-Sun: 06:00-23:00",
+                image: "tesco-express.jpg",
+                location: { lat: 51.4945, lng: -0.1829 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/tesco",
+                    twitter: "https://twitter.com/Tesco",
+                    instagram: "https://www.instagram.com/tesco"
+                },
+                rating: 4.0,
+                reviews: [
+                    { author: "Alex K.", date: "2023-05-18", text: "Convenient location and good selection of products." },
+                    { author: "Lisa M.", date: "2023-05-05", text: "Always open when I need something, great for students!" }
+                ]
+            },
+            {
+                id: 4,
+                name: "Deliveroo",
+                type: "delivery",
+                university: "University College London",
+                description: "Food delivery app with a wide range of restaurants",
+                price: 0,
+                address: "N/A (App-based service)",
+                website: "https://deliveroo.co.uk",
+                phone: "N/A",
+                hours: "Varies by restaurant",
+                image: "deliver.png",
+                location: { lat: 51.5246, lng: -0.1340 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/Deliveroo",
+                    twitter: "https://twitter.com/Deliveroo",
+                    instagram: "https://www.instagram.com/deliveroo"
+                },
+                rating: 4.3,
+                reviews: [
+                    { author: "Tom S.", date: "2023-05-20", text: "Great variety of restaurants and quick delivery!" },
+                    { author: "Emma W.", date: "2023-05-12", text: "Convenient for busy students, but can be pricey." }
+                ]
+            },
+            {
+                id: 5,
+                name: "University Cafeteria",
+                type: "cafeteria",
+                university: "University of Edinburgh",
+                description: "On-campus cafeteria with affordable meal options",
+                price: 8,
+                address: "Old College, South Bridge, Edinburgh EH8 9YL",
+                website: "https://www.ed.ac.uk/catering",
+                phone: "+44 131 650 1000",
+                hours: "Mon-Fri: 08:00-18:00",
+                image: "cater.png",
+                location: { lat: 55.9472, lng: -3.1892 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/UniversityOfEdinburgh",
+                    twitter: "https://twitter.com/EdinburghUni"
+                },
+                rating: 3.8,
+                reviews: [
+                    { author: "David L.", date: "2023-05-14", text: "Decent food at student-friendly prices." },
+                    { author: "Sophie R.", date: "2023-05-02", text: "Convenient location, but limited vegan options." }
+                ]
+            },
+            {
+                id: 6,
+                name: "HelloFresh",
+                type: "meal-delivery",
+                university: "University of Manchester",
+                description: "Meal kit delivery service with easy-to-cook recipes",
+                price: 30,
+                address: "N/A (Delivery service)",
+                website: "https://www.hellofresh.co.uk",
+                phone: "+44 20 3835 9505",
+                hours: "Online ordering 24/7",
+                image: "hello.png",
+                location: { lat: 53.4668, lng: -2.2339 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/HelloFreshUK",
+                    twitter: "https://twitter.com/HelloFreshUK",
+                    instagram: "https://www.instagram.com/hellofreshuk"
+                },
+                rating: 4.4,
+                reviews: [
+                    { author: "Chris P.", date: "2023-05-19", text: "Great for learning to cook, but can be expensive for students." },
+                    { author: "Anna M.", date: "2023-05-08", text: "Delicious recipes and convenient delivery." }
+                ]
+            },
+            {
+                id: 7,
+                name: "Nando's",
+                type: "cheap-restaurant",
+                university: "King's College London",
+                description: "Popular chain restaurant with affordable chicken dishes",
+                price: 12,
+                address: "1-3 Strand, London WC2N 5EJ",
+                website: "https://www.nandos.co.uk/restaurants/london-strand",
+                phone: "+44 20 7930 3888",
+                hours: "Mon-Sun: 11:30-22:00",
+                image: "nando.jpg",
+                location: { lat: 51.5081, lng: -0.1248 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/nandosuk",
+                    twitter: "https://twitter.com/NandosUK",
+                    instagram: "https://www.instagram.com/nandosuk"
+                },
+                rating: 4.2,
+                reviews: [
+                    { author: "Mark T.", date: "2023-05-17", text: "Always reliable for a tasty, affordable meal." },
+                    { author: "Rachel S.", date: "2023-05-03", text: "Great student discounts and lively atmosphere." }
+                ]
+            },
+            {
+                id: 8,
+                name: "Barclays Bank",
+                type: "money-services",
+                university: "London School of Economics",
+                description: "Full-service bank with student accounts and international services",
+                price: 0,
+                address: "19-21 Fleet St, London EC4Y 1AA",
+                website: "https://www.barclays.co.uk/current-accounts/student-account",
+                phone: "+44 345 734 5345",
+                hours: "Mon-Fri: 09:30-16:30",
+                image: "Barclays.jpg",
+                location: { lat: 51.5138, lng: -0.1090 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/Barclays",
+                    twitter: "https://twitter.com/Barclays",
+                    instagram: "https://www.instagram.com/barclays"
+                },
+                rating: 3.9,
+                reviews: [
+                    { author: "James W.", date: "2023-05-16", text: "Good student account options, but long wait times." },
+                    { author: "Olivia K.", date: "2023-05-01", text: "Helpful staff for international students." }
+                ]
+            },
+            {
+                id: 9,
+                name: "Sainsbury's Local",
+                type: "supermarket",
+                university: "University of Warwick",
+                description: "Convenient supermarket for groceries and essentials",
+                price: 5,
+                address: "Unit 2A, Cannon Park Shopping Centre, Lynchgate Rd, Coventry CV4 7EH",
+                website: "https://stores.sainsburys.co.uk/1517/coventry-cannon-park",
+                phone: "+44 800 636 262",
+                hours: "Mon-Sun: 07:00-23:00",
+                image: "sainsbury.png",
+                location: { lat: 52.3793, lng: -1.5615 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/sainsburys",
+                    twitter: "https://twitter.com/sainsburys",
+                    instagram: "https://www.instagram.com/sainsburys"
+                },
+                rating: 4.1,
+                reviews: [
+                    { author: "Lucy H.", date: "2023-05-13", text: "Convenient location near campus, good selection." },
+                    { author: "Ryan M.", date: "2023-04-28", text: "Reasonable prices and friendly staff." }
+                ]
+            },
+            {
+                id: 10,
+                name: "Curry House",
+                type: "restaurant",
+                university: "University of Bristol",
+                description: "Authentic Indian restaurant with student discounts",
+                price: 18,
+                address: "12 Park St, Bristol BS1 5JA",
+                website: "https://www.curryhouse-bristol.co.uk",
+                phone: "+44 117 926 1234",
+                hours: "Mon-Sun: 12:00-23:00",
+                image: "curry.png",
+                location: { lat: 51.4545, lng: -2.6006 },
+                socialMedia: {
+                    facebook: "https://www.facebook.com/CurryHouseBristol",
+                    instagram: "https://www.instagram.com/curryhousebristol"
+                },
+                rating: 4.3,
+                reviews: [
+                    { author: "Ethan B.", date: "2023-05-11", text: "Delicious curries and great student deals!" },
+                    { author: "Zoe T.", date: "2023-04-25", text: "Authentic flavors and friendly service." }
+                ]
+            }
+        ];
+
+        let map;
+        let markers = [];
+        let favorites = JSON.parse(localStorage.getItem('favoriteAmenities')) || [];
+
+        function initMap() {
+            map = L.map('map').setView([54.5, -4], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            amenities.forEach(amenity => {
+                const marker = L.marker([amenity.location.lat, amenity.location.lng])
+                    .addTo(map)
+                    .bindPopup(amenity.name);
+                markers.push(marker);
+            });
+        }
+
+        function populateUniversities() {
+            const universitySelect = document.getElementById('university');
+            const universities = [...new Set(amenities.map(amenity => amenity.university))];
+            universities.forEach(uni => {
+                const option = document.createElement('option');
+                option.value = uni;
+                option.textContent = uni;
+                universitySelect.appendChild(option);
+            });
+        }
+
+        function createAmenityCard(amenity) {
+            const card = document.createElement('div');
+            card.className = 'amenity-card';
+            card.innerHTML = `
+                <img src="/static/${amenity.image}" alt="${amenity.name}">
+                <div class="amenity-card-content">
+                    <h3>${amenity.name}</h3>
+                    <p>Type: ${amenity.type}</p>
+                    <p>University: ${amenity.university}</p>
+                    <p class="price">Average cost: £${amenity.price}</p>
+                    <div class="amenity-card-actions">
+                        <button class="favorite-btn" data-id="${amenity.id}">${favorites.includes(amenity.id) ? '❤️' : '🤍'}</button>
+                        <button class="view-details-btn" onclick="openModal(${amenity.id})">View Details</button>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function filterAndDisplayAmenities() {
+            const university = document.getElementById('university').value;
+            const amenityType = document.getElementById('amenity-type').value;
+            const price = parseInt(document.getElementById('price').value) || Infinity;
+
+            const filteredAmenities = amenities.filter(amenity => 
+                (!university || amenity.university === university) &&
+                (!amenityType || amenity.type === amenityType) &&
+                (amenity.price <= price)
+            );
+
+            const amenitiesList = document.getElementById('amenities-list');
+            amenitiesList.innerHTML = '';
+            filteredAmenities.forEach((amenity, index) => {
+                const card = createAmenityCard(amenity);
+                amenitiesList.appendChild(card);
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 100);
+            });
+
+            // Update map markers
+            markers.forEach(marker => {
+                const amenity = amenities.find(a => a.name === marker.getPopup().getContent());
+                if (filteredAmenities.includes(amenity)) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            });
+        }
+
+        const modal = document.getElementById("amenityModal");
+        const closeBtn = document.getElementsByClassName("close")[0];
+
+        function openModal(amenityId) {
+            const amenity = amenities.find(a => a.id === amenityId);
+            if (amenity) {
+                const detailsContainer = document.getElementById("amenity-details");
+                detailsContainer.innerHTML = `
+                    <h2>${amenity.name}</h2>
+                    <img src="/static/${amenity.image}" alt="${amenity.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                    <p><strong>Type:</strong> ${amenity.type}</p>
+                    <p><strong>University:</strong> ${amenity.university}</p>
+                    <p><strong>Description:</strong> ${amenity.description}</p>
+                    <p><strong>Average Cost:</strong> £${amenity.price}</p>
+                    <p><strong>Address:</strong> ${amenity.address}</p>
+                    <p><strong>Website:</strong> <a href="${amenity.website}" target="_blank">${amenity.website}</a></p>
+                    <p><strong>Phone:</strong> ${amenity.phone}</p>
+                    <p><strong>Hours:</strong> ${amenity.hours}</p>
+                    <div class="social-links">
+                        ${amenity.socialMedia.facebook ? `<a href="${amenity.socialMedia.facebook}" target="_blank">Facebook</a>` : ''}
+                        ${amenity.socialMedia.instagram ? `<a href="${amenity.socialMedia.instagram}" target="_blank">Instagram</a>` : ''}
+                        ${amenity.socialMedia.twitter ? `<a href="${amenity.socialMedia.twitter}" target="_blank">Twitter</a>` : ''}
+                    </div>
+                    <div class="rating">
+                        <span class="stars">${'★'.repeat(Math.round(amenity.rating))}</span>
+                        <span>${amenity.rating.toFixed(1)}</span>
+                    </div>
+                    <div class="reviews">
+                        <h3>Reviews</h3>
+                        ${amenity.reviews.map(review => `
+                            <div class="review">
+                                <p class="review-author">${review.author}</p>
+                                <p class="review-date">${review.date}</p>
+                                <p>${review.text}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="openGoogleMaps(${amenity.location.lat}, ${amenity.location.lng})">View on Map</button>
+                `;
+                modal.style.display = "block";
+            }
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function openGoogleMaps(lat, lng) {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+        }
+
+        function updateFavorites(amenityId) {
+            const index = favorites.indexOf(amenityId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(amenityId);
+            }
+            localStorage.setItem('favoriteAmenities', JSON.stringify(favorites));
+            displayFavorites();
+        }
+
+        function displayFavorites() {
+            const favoritesList = document.getElementById('favorites-list');
+            favoritesList.innerHTML = '';
+            favorites.forEach(id => {
+                const amenity = amenities.find(a => a.id === id);
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    ${amenity.name}
+                    <button class="remove-favorite" data-id="${amenity.id}">×</button>
+                `;
+                favoritesList.appendChild(li);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('favorite-btn')) {
+                const amenityId = parseInt(e.target.getAttribute('data-id'));
+                updateFavorites(amenityId);
+                e.target.textContent = favorites.includes(amenityId) ? '❤️' : '🤍';
+            }
+            if (e.target && e.target.classList.contains('remove-favorite')) {
+                const amenityId = parseInt(e.target.getAttribute('data-id'));
+                updateFavorites(amenityId);
+                filterAndDisplayAmenities();
+            }
+        });
+
+        document.getElementById('apply-filters').addEventListener('click', filterAndDisplayAmenities);
+
+        // Initialize everything
+        window.onload = function() {
+            initMap();
+            populateUniversities();
+            filterAndDisplayAmenities();
+            displayFavorites();
+        };
+    </script>
+</body>
+</html>

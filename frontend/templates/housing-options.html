@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {%load static%}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK Housing Options | Abroad Assist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --text-01: #45413E;
+            --light-01: #F9F9F9;
+            --light-02: #FFFFFF;
+            --brand-01: #DB7F67;
+            --brand-02: #F4CFC6;
+            --card-hover: 0px 8px 30px rgba(0, 0, 0, 0.12);
+            --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-timing: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            background: var(--light-01);
+            color: var(--text-01);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: var(--light-02);
+            box-shadow: var(--card-shadow);
+            padding: 2rem 1rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .sidebar-logo span {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu a {
+            text-decoration: none;
+            color: var(--text-01);
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: var(--brand-02);
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu .material-icons {
+            margin-right: 10px;
+        }
+
+        .sign-out {
+            margin-top: auto;
+            padding: 0.5rem;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sign-out:hover {
+            background: #333;
+        }
+
+        main {
+            margin-left: 250px;
+            padding: 2rem;
+            width: calc(100% - 250px);
+        }
+
+        #hero {
+            background: linear-gradient(135deg, var(--brand-02), var(--brand-01));
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            color: var(--light-02);
+        }
+
+        #hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        #hero p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--light-02);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-01);
+        }
+
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: var(--hover-timing);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--brand-01);
+            box-shadow: 0 0 0 2px rgba(219, 127, 103, 0.2);
+        }
+
+        button {
+            background: var(--text-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        button:hover {
+            background: var(--brand-01);
+            transform: translateY(-2px);
+        }
+
+        .housing-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .housing-card {
+            background: var(--light-02);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--hover-timing);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .housing-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .housing-card:hover {
+            box-shadow: var(--card-hover);
+            transform: translateY(-5px);
+        }
+
+        .housing-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .housing-card h3 {
+            padding: 1.5rem 1.5rem 0.5rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        .housing-card p {
+            padding: 0 1.5rem;
+            color: var(--text-01);
+            opacity: 0.8;
+        }
+
+        .housing-card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            color: var(--brand-01);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .slider {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .slider-images { 
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slider-images img {
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .slider-nav.prev {
+            left: 10px;
+        }
+
+        .slider-nav.next {
+            right: 10px;
+        }
+
+        .housing-details h2 {
+            color: var(--brand-01);
+            margin-bottom: 10px;
+        }
+
+        .housing-details p {
+            margin-bottom: 10px;
+        }
+
+        .social-links {
+            margin-top: 15px;
+        }
+
+        .social-links a {
+            margin-right: 10px;
+            color: var(--brand-01);
+            text-decoration: none;
+        }
+
+        .favorites-container {
+            background: var(--light-02);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .favorites-container h3 {
+            color: var(--brand-01);
+            margin-bottom: 1rem;
+        }
+
+        .favorites-list {
+            list-style-type: none;
+        }
+
+        .favorites-list li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-favorite {
+            background: none;
+            border: none;
+            color: var(--text-01);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .filter-container {
+                flex-direction: column;
+            }
+
+            .housing-list {
+                grid-template-columns: 1fr;
+            }
+
+            #hero h1 {
+                font-size: 2rem;
+            }
+
+            #hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://img.icons8.com/color/48/000000/airplane-mode-on--v1.png" alt="Airplane Logo">
+            <span>Abroad Assist</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard"><span class="material-icons">dashboard</span>Dashboard</a></li>
+            <li><a href="university-selection"><span class="material-icons">school</span>University Selection</a></li>
+            <li><a href="housing-options" class="active"><span class="material-icons">home</span>Housing Options</a></li>
+            <li><a href="travelexpense"><span class="material-icons">flight</span>Travel Expenses</a></li>
+            <li><a href="local ammenities"><span class="material-icons">location_city</span>Local Amenities</a></li>
+            <li><a href="tiffin"><span class="material-icons">restaurant</span>Tiffin Services</a></li>
+            <li><a href="health"><span class="material-icons">local_hospital</span>Healthcare</a></li>
+        </ul>
+        <a href="/logout" class="sign-out"></span>Sign Out</a>
+    </aside>
+
+    <main>
+        <section id="hero">
+            <h1>UK Student Housing Options</h1>
+            <p>Find the perfect accommodation for your study abroad experience in the United Kingdom.</p>
+        </section>
+
+        <section id="favorites" class="favorites-container">
+            <h3>Your Favorites</h3>
+            <ul id="favorites-list" class="favorites-list"></ul>
+        </section>
+
+        <section id="housing-selection">
+            <h2>Housing Selection</h2>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="city">City:</label>
+                    <select id="city">
+                        <option value="">All Cities</option>
+                        <!-- Cities will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="university">University:</label>
+                    <select id="university">
+                        <option value="">All Universities</option>
+                        <!-- Universities will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="type">Accommodation Type:</label>
+                    <select id="type">
+                        <option value="">All Types</option>
+                        <option value="ensuite">Ensuite</option>
+                        <option value="studio">Studio</option>
+                        <option value="shared">Shared</option>
+                        <option value="apartment">Apartment</option>
+                        <option value="house">House</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="budget">Max Budget (£ per week):</label>
+                    <input type="number" id="budget" min="0" step="10">
+                </div>
+                <button id="apply-filters">Apply Filters</button>
+            </div>
+            <div id="housing-list" class="housing-list">
+                <!-- Housing cards will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <div id="housingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="slider">
+                <div class="slider-images">
+                <img src="/static/image1.jpg" alt="Image 1">
+                <img src="/static/image2.jpg" alt="Image 2">
+                <img src="/static/image3.jpg" alt="Image 3">
+                <img src="/static/image3.jpg" alt="Image 4">
+                <img src="/static/image3.jpg" alt="Image 5">
+                </div>
+                <a href="#" class="slider-nav prev">&lt;</a>
+                <a href="#" class="slider-nav next">&gt;</a>
+            </div>
+            <div class="housing-details"></div>
+        </div>
+    </div>
+
+    <script>
+        const housingOptions = [
+            {
+                name: "Astor College",
+                city: "London",
+                university: "University College London",
+                type: "ensuite",
+                price: 280,
+                description: "Modern ensuite rooms in the heart of London, perfect for UCL students. Astor College offers a vibrant student community with excellent facilities and easy access to campus.",
+                amenities: ["Wi-Fi", "Gym", "Study Areas", "Laundry Facilities", "24/7 Security", "Bike Storage"],
+                website: "https://www.ucl.ac.uk/accommodation/residences/astor-college",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/uclaccommodation",
+                    instagram: "https://www.instagram.com/uclaccommodation"
+                },
+                images: [
+                    "Astor acco.jpeg.jpg",
+                    "actor acco2.jpeg.jpg",
+                    "astor acco3.jpeg.jpg",
+                    "astor acco4.jpeg.jpg",
+                    "astor acco 5.jpeg.jpg"
+                ]
+            },
+            {
+                name: "Scape Bloomsbury",
+                city: "London",
+                university: "London School of Economics",
+                type: "studio",
+                price: 395,
+                description: "Luxury studio apartments in the heart of Bloomsbury, ideal for LSE students. Scape Bloomsbury offers a premium living experience with state-of-the-art facilities and a prime location.",
+                amenities: ["Wi-Fi", "Gym", "Study Rooms", "Cinema Room", "Rooftop Terrace", "24/7 Concierge"],
+                website: "https://www.scape.com/en-uk/student-accommodation/london/bloomsbury",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/scapestudent",
+                    instagram: "https://www.instagram.com/scapestudent"
+                },
+                images: [
+                    "Scape Bloomsbury1.png",
+                    "Scape Bloomsbury2.png",
+                    "Scape Bloomsbury3.png",
+                    "Scape Bloomsbury4.png",
+                    "Scape Bloomsbury5.png"
+                ]
+            },
+            {
+                name: "Claredale House",
+                city: "Oxford",
+                university: "University of Oxford",
+                type: "shared",
+                price: 180,
+                description: "Affordable shared accommodation in a historic building, perfect for Oxford students. Claredale House offers a unique living experience with a blend of traditional architecture and modern amenities.",
+                amenities: ["Wi-Fi", "Communal Kitchen", "Garden", "Laundry Room", "Bike Storage"],
+                website: "https://www.oxfordstudentpad.co.uk/accommodation/property/claredale-house",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/OxfordStudentPad",
+                    instagram: "https://www.instagram.com/oxfordstudentpad"
+                },
+                images: [
+                    "Claredalehouse (1).jpeg",
+                    "Claredalehouse (2).jpeg",
+                    "Claredalehouse (3).jpeg",
+                    "Claredalehouse (4).jpeg",
+                    "Claredale House(5).jpeg"
+
+                ]
+            },
+            {
+                name: "Vita Student York",
+                city: "York",
+                university: "University of York",
+                type: "studio",
+                price: 220,
+                description: "Modern studio apartments designed for University of York students. Vita Student York offers a premium living experience with a focus on community and well-being.",
+                amenities: ["Wi-Fi", "Gym", "Cinema Room", "Study Areas", "Games Room", "Events Programme"],
+                website: "https://www.vitastudent.com/student-accommodation/york",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/vitastudent",
+                    instagram: "https://www.instagram.com/vitastudent"
+                },
+                images: [
+                    "Vita Student York.png",
+                    "Vita Student York2.png",
+                    "Vita Student York3.png",
+                    "Vita Student York4.png",
+                    "Vita Student York5.png"
+                ]
+            },
+            {
+                name: "Falkner Eggington",
+                city: "Manchester",
+                university: "University of Manchester",
+                type: "apartment",
+                price: 160,
+                description: "Comfortable apartments in a vibrant student community, ideal for University of Manchester students. Falkner Eggington offers a balance of privacy and social spaces.",
+                amenities: ["Wi-Fi", "Common Room", "Study Areas", "Laundry Facilities", "Bike Storage"],
+                website: "https://www.manchester.ac.uk/study/accommodation/university-accommodation/falkner-eggington/",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/UoMAccommodation",
+                    instagram: "https://www.instagram.com/uomaccommodation"
+                },
+                images: [
+                    "Falker egginton (1).jpeg",
+                    "Falker egginton (2).jpeg",
+                    "Falker egginton (3).jpeg",
+                    "Falker egginton (4).jpeg"
+                ]
+            },
+            {
+                name: "Endcliffe Village",
+                city: "Sheffield",
+                university: "University of Sheffield",
+                type: "house",
+                price: 140,
+                description: "A diverse range of housing options in a village-like setting, perfect for University of Sheffield students. Endcliffe Village offers a unique community atmosphere with excellent facilities.",
+                amenities: ["Wi-Fi", "The Edge Sports Centre", "The Village Store", "Study Areas", "Social Events"],
+                website: "https://www.sheffield.ac.uk/accommodation/prospective/undergraduate/endcliffe",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/sheffieldaccommodation",
+                    instagram: "https://www.instagram.com/sheffieldaccommodation"
+                },
+                images: [
+                    "Endcliffe village  (1).jpeg",
+                    "Endcliffe village  (2).jpeg",
+                    "Endcliffe village  (3).jpeg",
+                    "Endcliffe village  (4).jpeg",
+                    "Endcliffe village  (5).jpeg"
+                ]
+            },
+            {
+                name: "Polden",
+                city: "Bath",
+                university: "University of Bath",
+                type: "ensuite",
+                price: 189,
+                description: "Modern ensuite rooms with stunning views of the city, perfect for University of Bath students. Polden offers a comfortable and convenient living experience on campus.",
+                amenities: ["Wi-Fi", "Common Room", "Laundry Facilities", "Bike Storage", "24/7 Security"],
+                website: "https://www.bath.ac.uk/corporate-information/polden-accommodation/",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/uniofbath",
+                    instagram: "https://www.instagram.com/uniofbath"
+                },
+                images: [
+                    "Polden (1).jpeg",
+                    "Polden (2).jpeg",
+                    "Polden (3).jpeg",
+                    "Polden (4).jpeg",
+                    "Polden (5).jpeg"
+                ]
+            },
+            {
+                name: "Northfield",
+                city: "Birmingham",
+                university: "University of Birmingham",
+                type: "apartment",
+                price: 155,
+                description: "Self-catered apartments in a picturesque setting, ideal for University of Birmingham students. Northfield offers a perfect balance of independence and community living.",
+                amenities: ["Wi-Fi", "On-site Gym", "Study Spaces", "Laundry Room", "Social Events"],
+                website: "https://www.birmingham.ac.uk/study/accommodation/residences/Northfield.aspx",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/unibirmingham",
+                    instagram: "https://www.instagram.com/unibirmingham"
+                },
+                images: [
+                    "Northfield (1).jpeg",
+                    "Northfield (2).jpeg",
+                    "Northfield (3).jpeg",
+                    "Northfield (4).jpeg"
+                ]
+            },
+            {
+                name: "Bowland College",
+                city: "Lancaster",
+                university: "Lancaster University",
+                type: "shared",
+                price: 129,
+                description: "Traditional college accommodation with a strong community spirit, perfect for Lancaster University students. Bowland College offers a unique collegiate experience.",
+                amenities: ["Wi-Fi", "JCR", "Bar", "Library", "Music Room"],
+                website: "https://www.lancaster.ac.uk/colleges/bowland/",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/LancasterUniversity",
+                    instagram: "https://www.instagram.com/lancasteruni"
+                },
+                images: [
+                    "Bowland college (1).jpeg",
+                    "Bowland college (2).jpeg",
+                    "Bowland college (3).jpeg",
+                    "Bowland college (4).jpeg"
+                ]
+            },
+            {
+                name: "St Leonard's House",
+                city: "Durham",
+                university: "Durham University",
+                type: "house",
+                price: 145,
+                description: "Charming Victorian house converted into student accommodation, ideal for Durham University students. St Leonard's House offers a homely atmosphere in a historic setting.",
+                amenities: ["Wi-Fi", "Communal Kitchen", "Garden", "Laundry Facilities", "Bike Storage"],
+                website: "https://www.dur.ac.uk/experience/colleges/St_Leonards_House/",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/durhamuniversity",
+                    instagram: "https://www.instagram.com/durhamuniversity"
+                },
+                images: [
+                    "Stleonards house(1).jpeg",
+                    "Stleonards house(2).jpeg",
+                    "Stleonards house(3).jpeg",
+                    "Stleonards house(4).jpeg",
+                    "Stleonards house(5).jpeg"
+                ]
+            },
+            {
+                name: "Foundry Studios",
+                city: "Glasgow",
+                university: "University of Glasgow",
+                type: "studio",
+                price: 210,
+                description: "Modern studio apartments in the heart of Glasgow's West End, perfect for University of Glasgow students. Foundry Studios offers a stylish and independent living experience.",
+                amenities: ["Wi-Fi", "Gym", "Cinema Room", "Study Areas", "Rooftop Terrace"],
+                website: "https://www.mystudenthalls.com/student-accommodation/glasgow/foundry-studios/",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/mystudenthalls",
+                    instagram: "https://www.instagram.com/mystudenthalls"
+                },
+                images: [
+                    "Foundry studios glasgow.jpeg",
+                    "Foundry studios glasgow2.jpeg",
+                    "Foundry studios glasgow3.jpeg",
+                    "Foundry studios glasgow4.jpeg",
+                    "Foundry studios glasgow5.jpeg"
+                ]
+            },
+            {
+                name: "Westwood Student Village",
+                city: "Warwick",
+                university: "University of Warwick",
+                type: "shared",
+                price: 135,
+                description: "Spacious shared flats in a peaceful campus setting, ideal for University of Warwick students. Westwood Student Village offers a friendly community atmosphere.",
+                amenities: ["Wi-Fi", "Common Room", "Sports Facilities", "Laundry Room", "24/7 Security"],
+                website: "https://warwick.ac.uk/services/accommodation/studentaccommodation/westwood/",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/warwickuni",
+                    instagram: "https://www.instagram.com/warwickuni"
+                },
+                images: [
+                    "Westwood student college (1).jpeg",
+                    "Westwood student college (2).jpeg",
+                    "Westwood student college (3).jpeg",
+                    "Westwood student college (4).jpeg"
+                ]
+            },
+            {
+                name: "St Andrews Hall",
+                city: "Norwich",
+                university: "University of East Anglia",
+                type: "ensuite",
+                price: 165,
+                description: "Modern ensuite rooms in a picturesque lakeside setting, perfect for University of East Anglia students. St Andrews Hall offers a tranquil living environment with easy access to campus facilities.",
+                amenities: ["Wi-Fi", "Common Room", "Study Areas", "Laundry Facilities", "Bike Storage"],
+                website: "https://www.uea.ac.uk/study/accommodation/residences/st-andrews-hall",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/ueaofficial",
+                    instagram: "https://www.instagram.com/uniofeastanglia"
+                },
+                images: [
+                    "St andrews hall (1).jpeg",
+                    "St andrews hall (2).jpeg",
+                    "St andrews hall (3).jpeg"
+                ]
+            },
+            {
+                name: "The Tannery",
+                city: "Leeds",
+                university: "University of Leeds",
+                type: "apartment",
+                price: 175,
+                description: "Stylish apartments in a converted leather tannery, ideal for University of Leeds students. The Tannery offers a unique living experience in a historic building with modern amenities.",
+                amenities: ["Wi-Fi", "Gym", "Cinema Room", "Study Areas", "Rooftop Terrace", "Games Room"],
+                website: "https://www.iqstudentaccommodation.com/student-accommodation/leeds/the-tannery",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/iqstudent",
+                    instagram: "https://www.instagram.com/iqstudent"
+                },
+                images: [
+                    "The tannery (1).jpeg",
+                    "The tannery (2).jpeg",
+                    "The tannery (3).jpeg"
+                ]
+            },
+            {
+                name: "Kelvinhaugh Gate",
+                city: "Glasgow",
+                university: "University of Glasgow",
+                type: "house",
+                price: 150,
+                description: "Traditional terraced houses in Glasgow's vibrant West End, perfect for University of Glasgow students. Kelvinhaugh Gate offers a homely atmosphere in a prime location.",
+                amenities: ["Wi-Fi", "Communal Garden", "Laundry Facilities", "Bike Storage", "24/7 Security"],
+                website: "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/kelvinhaughgate/",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/UofGlasgow",
+                    instagram: "https://www.instagram.com/uofglasgow"
+                },
+                images: [
+                    "Kelvinhaugh Gate (1).jpeg",
+                    "Kelvinhaugh Gate (2).jpeg",
+                    "Kelvinhaugh Gate (3).jpeg",
+                    "Kelvinhaugh Gate (4).jpeg",
+                    "Kelvinhaugh Gate (5).jpeg"
+                ]
+            }
+        ];
+
+        const cities = [...new Set(housingOptions.map(option => option.city))];
+        const universities = [...new Set(housingOptions.map(option => option.university))];
+
+        function populateDropdowns() {
+            const citySelect = document.getElementById('city');
+            const universitySelect = document.getElementById('university');
+
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+
+            universities.forEach(university => {
+                const option = document.createElement('option');
+                option.value = university;
+                option.textContent = university;
+                universitySelect.appendChild(option);
+            });
+        }
+
+        function createHousingCard(housing) {
+            const card = document.createElement('div');
+            card.className = 'housing-card';
+            card.innerHTML = `
+                
+                ${housing.name === "Astor College" ? `
+            <img src="/static/Astor.png" alt="UCL Image">
+            ` : ''}
+                ${housing.name === "Scape Bloomsbury" ? `
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202024-09-26%20160221-cJi77NLnYiQUsjoLuZjOICu80mWZO0.png" alt="Scape Bloomsbury Building">
+            ` : ''}
+                
+                ${housing.name === "Claredale House" ? `
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-zmt1gvMlMkgPY16hZLKTDQSpvDmKnh.png" alt="Claredale House Building">
+            ` : ''}
+                ${housing.name === "Vita Student York" ? `
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-8zyLjrMhSHqn9SFJnza9DssWV3YD2u.png" alt="Vita Student York Complex">
+            ` : ''}
+                ${housing.name === "Falkner Eggington" ? `
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ZXTdm6hwwxy1H8ETk1MmUUD7efnlQG.png" alt="Falkner Eggington Housing">
+            ` : ''}
+                ${housing.name === "Polden" ? `
+            <img src="/static/polden.png" alt="Polden">
+            ` : ''}  
+                ${housing.name === "Northfield" ? `
+            <img src="/static/Northfield.png" alt="Northfield">
+            ` : ''}  
+                ${housing.name === "Bowland College" ? `
+            <img src="/static/Bowland College.png" alt="Bowland College">
+            ` : ''}              
+                ${housing.name === "St Leonard's House" ? `
+            <img src="/static/St Leonard's House.png" alt="St Leonard's House">
+            ` : ''}       
+                ${housing.name === "Foundry Studios" ? `
+            <img src="/static/Foundry studios].png" alt="Foundry Studios">
+            ` : ''} 
+                 ${housing.name === "Westwood Student Village" ? `
+            <img src="/static/Westwood student village.png" alt="Westwood Student Village">
+            ` : ''}  
+                 ${housing.name === "St Andrews Hall" ? `
+            <img src="/static/St Andrews Hall.png" alt="St Andrews Hall">
+            ` : ''}       
+                  ${housing.name === "The Tannery" ? `
+            <img src="/static/Screenshot 2024-09-26 172039.png" alt="The Tannery">
+            ` : ''}     
+                ${housing.name === "Kelvinhaugh Gate" ? `
+            <img src="/static/Kelvinhaugh Gate.png" alt="Kelvinhaugh Gate">
+            ` : ''}       
+                ${housing.name === "Endcliffe Village" ? `
+            <img src="/static/Endcliffe village.png" alt="Endcliffe Village">
+            ` : ''}       
+                <h3>${housing.name}</h3>
+                <p>City: ${housing.city}</p>
+                <p>University: ${housing.university}</p>
+                <p>Type: ${housing.type}</p>
+                <p>Price: £${housing.price} per week</p>
+                <div class="housing-card-actions">
+                    <button class="favorite-btn" data-id="${housing.name}">${favorites.includes(housing.name) ? '❤️' : '🤍'}</button>
+                    <button onclick="openModal('${housing.name}')">View Details</button>
+                </div>
+            `;
+            return card;
+        }
+
+        function displayHousingOptions(filteredOptions) {
+            const housingList = document.getElementById('housing-list');
+            housingList.innerHTML = '';
+            filteredOptions.forEach((housing, index) => {
+                const card = createHousingCard(housing);
+                housingList.appendChild(card);
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 100);
+            });
+        }
+
+        function filterHousingOptions() {
+            const cityFilter = document.getElementById('city').value;
+            const universityFilter = document.getElementById('university').value;
+            const typeFilter = document.getElementById('type').value;
+            const budgetFilter = parseInt(document.getElementById('budget').value) || Infinity;
+
+            const filteredOptions = housingOptions.filter(housing => 
+                (cityFilter === '' || housing.city === cityFilter) &&
+                (universityFilter === '' || housing.university === universityFilter) &&
+                (typeFilter === '' || housing.type === typeFilter) &&
+                housing.price <= budgetFilter
+            );
+
+            displayHousingOptions(filteredOptions);
+        }
+
+        document.getElementById('apply-filters').addEventListener('click', filterHousingOptions);
+
+        // Modal and Slider functionality
+        const modal = document.getElementById("housingModal");
+        const closeBtn = document.getElementsByClassName("close")[0];
+        const sliderImages = document.querySelector(".slider-images");
+        const prevBtn = document.querySelector(".slider-nav.prev");
+        const nextBtn = document.querySelector(".slider-nav.next");
+        let currentImageIndex = 0;
+
+        function openModal(housingName) {
+            const housing = housingOptions.find(h => h.name === housingName);
+            if (housing) {
+                populateModal(housing);
+                modal.style.display = "block";
+            }
+        }
+
+        function populateModal(housing) {
+            // Populate slider with 5 images
+            sliderImages.innerHTML = housing.images.map(img => `<img src="/static/${img}" alt="${housing.name}">`).join('');
+            currentImageIndex = 0;
+            updateSlider();
+
+            // Populate housing details
+            const detailsContainer = document.querySelector(".housing-details");
+            detailsContainer.innerHTML = `
+                <h2>${housing.name}</h2>
+                <p><strong>City:</strong> ${housing.city}</p>
+                <p><strong>University:</strong> ${housing.university}</p>
+                <p><strong>Type:</strong> ${housing.type}</p>
+                <p><strong>Price:</strong> £${housing.price} per week</p>
+                <p><strong>Description:</strong> ${housing.description}</p>
+                <p><strong>Amenities:</strong> ${housing.amenities.join(', ')}</p>
+                <p><strong>Website:</strong> <a href="${housing.website}" target="_blank">${housing.website}</a></p>
+                <div class="social-links">
+                    <a href="${housing.socialMedia.facebook}" target="_blank">Facebook</a>
+                    <a href="${housing.socialMedia.instagram}" target="_blank">Instagram</a>
+                </div>
+            `;
+        }
+
+        function updateSlider() {
+            sliderImages.style.transform = `translateX(-${currentImageIndex * 100}%)`;
+        }
+
+        prevBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                updateSlider();
+            }
+        });
+
+        nextBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (currentImageIndex < 6) { //Updated 5 images, so max index is 6
+                currentImageIndex++;
+                updateSlider();
+            }
+        });
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Favorite functionality
+        let favorites = JSON.parse(localStorage.getItem('favoriteHousing')) || [];
+
+        function updateFavorites(housingName) {
+            const index = favorites.indexOf(housingName);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(housingName);
+            }
+            localStorage.setItem('favoriteHousing', JSON.stringify(favorites));
+            displayFavorites();
+        }
+
+        function displayFavorites() {
+            const favoritesList = document.getElementById('favorites-list');
+            favoritesList.innerHTML = '';
+            favorites.forEach(name => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    ${name}
+                    <button class="remove-favorite" data-id="${name}">×</button>
+                `;
+                favoritesList.appendChild(li);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('favorite-btn')) {
+                const housingName = e.target.getAttribute('data-id');
+                updateFavorites(housingName);
+                e.target.textContent = favorites.includes(housingName) ? '❤️' : '🤍';
+            }
+            if (e.target && e.target.classList.contains('remove-favorite')) {
+                const housingName = e.target.getAttribute('data-id');
+                updateFavorites(housingName);
+                filterHousingOptions(); // Refresh the housing list to update favorite buttons
+            }
+        });
+
+        // Initialize
+        populateDropdowns();
+        displayHousingOptions(housingOptions);
+        displayFavorites();
+    </script>
+</body>
+</html>

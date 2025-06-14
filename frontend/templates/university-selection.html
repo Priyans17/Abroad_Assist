@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK University Selection | Abroad Assist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --text-01: #45413E;
+            --light-01: #F9F9F9;
+            --light-02: #FFFFFF;
+            --brand-01: #DB7F67;
+            --brand-02: #F4CFC6;
+            --card-hover: 0px 8px 30px rgba(0, 0, 0, 0.12);
+            --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-timing: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            background: var(--light-01);
+            color: var(--text-01);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: var(--light-02);
+            box-shadow: var(--card-shadow);
+            padding: 2rem 1rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .sidebar-logo span {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu a {
+            text-decoration: none;
+            color: var(--text-01);
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: var(--brand-02);
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu .material-icons {
+            margin-right: 10px;
+        }
+
+        .sign-out {
+            margin-top: auto;
+            padding: 0.5rem;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sign-out:hover {
+            background: #333;
+        }
+
+        main {
+            margin-left: 250px;
+            padding: 2rem;
+            width: calc(100% - 250px);
+        }
+
+        #hero {
+            background: linear-gradient(135deg, var(--brand-02), var(--brand-01));
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            color: var(--light-02);
+        }
+
+        #hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        #hero p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--light-02);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-01);
+        }
+
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: var(--hover-timing);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--brand-01);
+            box-shadow: 0 0 0 2px rgba(219, 127, 103, 0.2);
+        }
+
+        button {
+            background: var(--text-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        button:hover {
+            background: var(--brand-01);
+            transform: translateY(-2px);
+        }
+
+        .university-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .university-card {
+            background: var(--light-02);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--hover-timing);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .university-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .university-card:hover {
+            box-shadow: var(--card-hover);
+            transform: translateY(-5px);
+        }
+
+        .university-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .university-card h3 {
+            padding: 1.5rem 1.5rem 0.5rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        .university-card p {
+            padding: 0 1.5rem;
+            color: var(--text-01);
+            opacity: 0.8;
+        }
+
+        .university-card button {
+            margin: 1.5rem;
+            width: calc(100% - 3rem);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .slider {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .slider-images {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slider-images img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .slider-nav.prev {
+            left: 10px;
+        }
+
+        .slider-nav.next {
+            right: 10px;
+        }
+
+        .university-details h2 {
+            color: var(--brand-01);
+            margin-bottom: 10px;
+        }
+
+        .university-details p {
+            margin-bottom: 10px;
+        }
+
+        .social-links {
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            margin-right: 10px;
+            color: var(--brand-01);
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .filter-container {
+                flex-direction: column;
+            }
+
+            .university-list {
+                grid-template-columns: 1fr;
+            }
+
+            #hero h1 {
+                font-size: 2rem;
+            }
+
+            #hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://img.icons8.com/color/48/000000/airplane-mode-on--v1.png" alt="Airplane Logo">
+            <span>Abroad Assist</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard"><span class="material-icons">dashboard</span>Dashboard</a></li>
+            <li><a href="university selection" class="active"><span class="material-icons">school</span>University Selection</a></li>
+            <li><a href="housing-options"><span class="material-icons">home</span>Housing Options</a></li>
+            <li><a href="travelexpense"><span class="material-icons">flight</span>Travel Expenses</a></li>
+            <li><a href="local ammenities"><span class="material-icons">location_city</span>Local Amenities</a></li>
+            <li><a href="tiffin"><span class="material-icons">restaurant</span>Tiffin Services</a></li>
+            <li><a href="health"><span class="material-icons">local_hospital</span>Healthcare</a></li>
+        </ul>
+        <a href="/logout" class="sign-out">Sign Out</a>
+    </aside>
+
+    
+    <main>
+        <section id="hero">
+            <h1>Discover Top UK Universities</h1>
+            <p>Explore the best educational institutions in the United Kingdom for your study abroad journey.</p>
+        </section>
+
+        <section id="university-selection">
+            <h2>UK University Selection</h2>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="city">City:</label>
+                    <select id="city">
+                        <option value="">All Cities</option>
+                        <option value="london">London</option>
+                        <option value="manchester">Manchester</option>
+                        <option value="edinburgh">Edinburgh</option>
+                        <option value="birmingham">Birmingham</option>
+                        <option value="glasgow">Glasgow</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="subject">Subject:</label>
+                    <select id="subject">
+                        <option value="">All Subjects</option>
+                        <option value="computer-science">Computer Science</option>
+                        <option value="business">Business</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="medicine">Medicine</option>
+                        <option value="arts">Arts</option>
+                    </select>
+                </div>
+                <button id="apply-filters">Apply Filters</button>
+            </div>
+            <div id="university-list" class="university-list">
+                <!-- University cards will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <div id="universityModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="slider">
+                <div class="slider-images"></div>
+                <a href="#" class="slider-nav prev">&lt;</a>
+                <a href="#" class="slider-nav next">&gt;</a>
+            </div>
+            <div class="university-details"></div>
+        </div>
+    </div>
+
+    <script>
+        const universities = [
+            {
+                name: "University of Oxford",
+                city: "Oxford",
+                image: "oxford1.jpeg",
+                subjects: ["Computer Science", "Business", "Engineering", "Medicine", "Arts"],
+                ranking: 1,
+                housingInfo: "Various college accommodations available",
+                description: "The University of Oxford is a collegiate research university in Oxford, England. There is evidence of teaching as early as 1096, making it the oldest university in the English-speaking world and the world's second-oldest university in continuous operation.",
+                founded: 1096,
+                website: "https://www.ox.ac.uk/",
+                contact: "+44 (0)1865 270000",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/the.university.of.oxford",
+                    twitter: "https://twitter.com/UniofOxford",
+                    instagram: "https://www.instagram.com/oxford_uni/"
+                },
+                images: [
+                    "oxford1.jpeg",
+                    "oxford2.jpeg",
+                    "oxford3.jpeg", 
+                    "oxford4.jpg", 
+                    "oxford5.jpg", 
+            ]
+            },
+        
+
+            {
+                name: "University of Cambridge",
+                city: "Cambridge",
+                image: "cambridge.jpg",
+                subjects: ["Computer Science", "Engineering", "Medicine", "Arts"],
+                ranking: 2,
+                housingInfo: "College-based accommodation system",
+                description: "The University of Cambridge is a collegiate research university in Cambridge, United Kingdom. Founded in 1209 and granted a royal charter by Henry III in 1231, Cambridge is the second-oldest university in the English-speaking world and the world's fourth-oldest surviving university.",
+                founded: 1209,
+                website: "https://www.cam.ac.uk/",
+                contact: "+44 (0)1223 337733",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/cambridge.university",
+                    twitter: "https://twitter.com/Cambridge_Uni",
+                    instagram: "https://www.instagram.com/cambridgeuniversity/"
+                },
+                images: [
+                    "cambridge1.jpeg",
+                    "cambridge2.jpeg",
+                    "cambridge3.jpeg",
+                    "cambridge4.jpeg",
+                    "cambridge5.jpeg",  
+                    "Cambridge6.jpeg",      
+                ]
+            },
+            {
+                name: "Imperial College London",
+                city: "London",
+                image: "imperial.jpg",
+                subjects: ["Engineering", "Medicine", "Computer Science"],
+                ranking: 3,
+                housingInfo: "Halls of residence and private accommodations",
+                description: "Imperial College London is a public research university located in London. Its founder, Prince Albert, envisioned an area composed of the Victoria and Albert Museum, Natural History Museum, Royal Albert Hall, and the Imperial Institute.",
+                founded: 1907,
+                website: "https://www.imperial.ac.uk/",
+                contact: "+44 (0)20 7589 5111",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/imperialcollegelondon",
+                    twitter: "https://twitter.com/imperialcollege",
+                    instagram: "https://www.instagram.com/imperialcollege/"
+                },
+                images: [
+                    "Imperial1.jpeg",
+                    "Imperial2.jpeg",
+                    "Imperial3.jpeg",
+                    "Imperial4.jpeg",
+                    "Imperial5.jpeg",
+                    "Imperial6.jpeg"
+                ]
+            },
+            {
+                name: "University College London",
+                city: "London",
+                image: "UCL.jpg",
+                subjects: ["Computer Science", "Engineering", "Medicine", "Arts"],
+                ranking: 4,
+                housingInfo: "Student houses and halls of residence",
+                description: "University College London, which operates as UCL, is a public research university located in London, United Kingdom. It is a member institution of the federal University of London, and is the second-largest university in the United Kingdom by total enrolment and the largest by postgraduate enrolment.",
+                founded: 1826,
+                website: "https://www.ucl.ac.uk/",
+                contact: "+44 (0)20 7679 2000",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/uclofficial",
+                    twitter: "https://twitter.com/ucl",
+                    instagram: "https://www.instagram.com/ucl/"
+                },
+                images: [
+                    "UCL1.jpeg",
+                    "UCL2.jpeg",
+                    "UCL3.jpeg",
+                    "UCL4.jpeg",
+                    "UCL5.jpeg",
+                    "UCL6.jpg",
+                    "UCL7.jpg"
+                ]
+            },
+            {
+                name: "University of Edinburgh",
+                city: "Edinburgh",
+                image: "Edinburgh.jpeg",
+                subjects: ["Computer Science", "Business", "Medicine", "Arts"],
+                ranking: 5,
+                housingInfo: "University-owned and private accommodations are available",
+                description: "The University of Edinburgh, founded in 1582, is the sixth oldest university in the English-speaking world and one of Scotland's ancient universities. The university is deeply embedded in the fabric of the city of Edinburgh, with many of the buildings in the historic Old Town belonging to the university.",
+                founded: 1582,
+                website: "https://www.ed.ac.uk/",
+                contact: "+44 (0)131 650 1000",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/UniversityOfEdinburgh",
+                    twitter: "https://twitter.com/EdinburghUni",
+                    instagram: "https://www.instagram.com/edinburghuniversity/"
+                },
+                images: [
+                    "Edinburgh1.jpeg",
+                    "Edinburgh2.jpeg",
+                    "Edinburgh3.jpeg",
+                    "Edinburgh4.jpeg",
+                    "Edinburgh6.jpeg",
+                
+                ]
+            },
+            {
+                name: "University of Manchester",
+                city: "Manchester",
+                image: "manchester.jpeg",
+                subjects: ["Computer Science", "Engineering", "Business"],
+                ranking: 6,
+                housingInfo: "Halls of residence and private rentals",
+                description: "The University of Manchester is a public research university in Manchester, England, formed in 2004 by the merger of the University of Manchester Institute of Science and Technology and the Victoria University of Manchester. The University of Manchester is a red brick university, a product of the civic university movement of the late 19th century.",
+                founded: 2004,
+                website: "https://www.manchester.ac.uk/",
+                contact: "+44 (0)161 306 6000",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/TheUniversityOfManchester",
+                    twitter: "https://twitter.com/OfficialUoM",
+                    instagram: "https://www.instagram.com/officialuom/"
+                },
+                images: [
+                    "Manchester1.jpeg",
+                    "Manchester3.jpeg",
+                    "Manchester4.jpeg",
+                    "Manchester2.jpeg",
+                    "Manchester5.jpeg",
+                   
+                ]
+            },
+            {
+                name: "Kings College London",
+                city: "London",
+                image: "King.jpeg",
+                subjects: ["Medicine", "Arts", "Business"],
+                ranking: 7,
+                housingInfo: "University residences and private options",
+                description: "King's College London is a public research university located in London, United Kingdom, and a founding college and member institution of the federal University of London. King's was established in 1829 by King George IV and Arthur Wellesley, 1st Duke of Wellington, when it received its first royal charter.",
+                founded: 1829,
+                website: "https://www.kcl.ac.uk/",
+                contact: "+44 (0)20 7836 5454",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/KingsCollegeLondon",
+                    twitter: "https://twitter.com/KingsCollegeLon",
+                    instagram: "https://www.instagram.com/kings_college_london/"
+                },
+                images: [
+                    "Kings1.jpg",
+                    "Kings2.jpeg",
+                    "Kings3.jpeg",
+                    "Kings4.jpeg",
+                    "Kings5.jpeg",
+                ]
+            },
+            {
+                name: "London School of Economics",
+                city: "London",
+                image: "LSE.jpeg",
+                subjects: ["Business", "Arts"],
+                ranking: 8,
+                housingInfo: "Halls of residence and private accommodations",
+                description: "The London School of Economics and Political Science is a public research university located in London, England, and a member institution of the federal University of London. Founded in 1895, by Fabian Society members Sidney Webb, Beatrice Webb, Graham Wallas, and George Bernard Shaw, LSE joined the University of London in 1900 and established its first degree courses under the auspices of the University in 1901.",
+                founded: 1895,
+                website: "https://www.lse.ac.uk/",
+                contact: "+44 (0)20 7405 7686",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/lseps",
+                    twitter: "https://twitter.com/LSEnews",
+                    instagram: "https://www.instagram.com/londonschoolofeconomics/"
+                },
+                images: [
+                    "LSE1.jpg",
+                    "LSE2.jpeg",
+                    "LSE3.jpeg",
+                    "LSE4.jpeg",
+                    "LSE5.jpg",
+                    "LSE6.jpg",
+                    "LSE7.jpg",
+                ]
+            },
+            {
+                name: "University of Warwick",
+                city: "Coventry",
+                image: "Warwick.jpeg",
+                subjects: ["Computer Science", "Business", "Engineering"],
+                ranking: 9,
+                housingInfo: "On-campus and off-campus options available",
+                description: "The University of Warwick is a public research university on the outskirts of Coventry between the West Midlands and Warwickshire, England. The university was founded in 1965 as part of a government initiative to expand higher education.",
+                founded: 1965,
+                website: "https://warwick.ac.uk/",
+                contact: "+44 (0)24 7652 3523",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/warwickuniversity",
+                    twitter: "https://twitter.com/warwickuni",
+                    instagram: "https://www.instagram.com/warwicksuofficial/"
+                },
+                images: [
+                    "Warwick1.jpeg",
+                    "Warwick2.jpeg",
+                    "Warwick3.jpeg",
+                    "Warwick4.jpeg",
+                    "Warwick5.jpeg",
+                    "Warwick6.jpeg"
+                ]
+            },
+            {
+                name: "University of Bristol",
+                city: "Bristol",
+                image: "Bristol.jpeg",
+                subjects: ["Engineering", "Arts", "Medicine"],
+                ranking: 10,
+                housingInfo: "University-allocated and private sector housing",
+                description: "The University of Bristol is a red brick research university in Bristol, England. It received its royal charter in 1909, although it can trace its roots to a Merchant Venturers' school founded in 1595 and University College, Bristol, which had been in existence since 1876.",
+                founded: 1876,
+                website: "https://www.bristol.ac.uk/",
+                contact: "+44 (0)117 928 9000",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/bristoluniversity",
+                    twitter: "https://twitter.com/BristolUni",
+                    instagram: "https://www.instagram.com/universityofbristol/"
+                },
+                images: [
+                    "Bristol1.jpeg",
+                    "Bristol2.jpeg",
+                    "Bristol3.jpeg",
+                    "Bristol4.jpeg",
+                    "Bristol5.jpeg",
+                    "Bristol6.jpeg",
+                    "Bristol7.jpeg",
+                ]
+            },
+            {
+                name: "University of Glasgow",
+                city: "Glasgow",
+                image: "glasgow uni.jpeg",
+                subjects: ["Medicine", "Engineering", "Arts"],
+                ranking: 11,
+                housingInfo: "University halls and private accommodations",
+                description: "The University of Glasgow is a public research university in Glasgow, Scotland. Founded by papal bull in 1451, it is the fourth-oldest university in the English-speaking world and one of Scotland's four ancient universities.",
+                founded: 1451,
+                website: "https://www.gla.ac.uk/",
+                contact: "+44 (0)141 330 2000",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/UofGlasgow",
+                    twitter: "https://twitter.com/UofGlasgow",
+                    instagram: "https://www.instagram.com/uofglasgow/"
+                },
+                images: [
+                    "glasgow1.jpg",
+                    "glasgow2.jpg",
+                    "glasgow3.jpg",
+                    "glasgow4.jpg",
+                    "glasgow5.jpg",
+                    "glasgow6.jpg",
+                ]
+            },
+            {
+                name: "Durham University",
+                city: "Durham",
+                image: "Durham.jpeg",
+                subjects: ["Arts", "Business", "Computer Science"],
+                ranking: 12,
+                housingInfo: "College-based accommodation system",
+                description: "Durham University is a collegiate public research university in Durham, England, founded by an Act of Parliament in 1832 and incorporated by Royal Charter in 1837. It was one of the first universities to open in England for more than 600 years, after Oxford and Cambridge, and is thus one of the institutions to be described as the third-oldest university in England.",
+                founded: 1832,
+                website: "https://www.durham.ac.uk/",
+                contact: "+44 (0)191 334 2000",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/durhamuniversity",
+                    twitter: "https://twitter.com/durham_uni",
+                    instagram: "https://www.instagram.com/durhamuniversity/"
+                },
+                images: [
+                    "durham1.jpg",
+                    "durham2.jpg",
+                    "durham3.jpg",
+                    "durham4.jpg",
+                    "durham5.jpg",
+                    "durham6.jpg",
+                ]
+            }
+        ];
+
+        function createUniversityCard(university) {
+            const card = document.createElement('div');
+            card.className = 'university-card';
+            card.innerHTML = `
+                <img src="/static/${university.image}" alt="${university.name}">
+                <h3>${university.name}</h3>
+                <p>City: ${university.city}</p>
+                <p>Ranking: ${university.ranking}</p>
+                <p>Housing: ${university.housingInfo}</p>
+                <button onclick="openModal('${university.name}')">View Details</button>
+            `;
+            return card;
+        }
+
+        function displayUniversities(filteredUniversities) {
+            const universityList = document.getElementById('university-list');
+            universityList.innerHTML = '';
+            filteredUniversities.forEach((university, index) => {
+                const card = createUniversityCard(university);
+                universityList.appendChild(card);
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 100);
+            });
+        }
+
+        function filterUniversities() {
+            const cityFilter = document.getElementById('city').value.toLowerCase();
+            const subjectFilter = document.getElementById('subject').value.toLowerCase();
+
+            const filteredUniversities = universities.filter(university => {
+                const cityMatch = cityFilter === '' || university.city.toLowerCase().includes(cityFilter);
+                const subjectMatch = subjectFilter === '' || university.subjects.some(subject => subject.toLowerCase().includes(subjectFilter));
+                return cityMatch && subjectMatch;
+            });
+
+            displayUniversities(filteredUniversities);
+        }
+
+        document.getElementById('apply-filters').addEventListener('click', filterUniversities);
+
+        // Initial display
+        displayUniversities(universities);
+
+        // Modal and Slider functionality
+        const modal = document.getElementById("universityModal");
+        const closeBtn = document.getElementsByClassName("close")[0];
+        const sliderImages = document.querySelector(".slider-images");
+        const prevBtn = document.querySelector(".slider-nav.prev");
+        const nextBtn = document.querySelector(".slider-nav.next");
+        let currentImageIndex = 0;
+
+        function openModal(universityName) {
+            const university = universities.find(u => u.name === universityName);
+            if (university) {
+                populateModal(university);
+                modal.style.display = "block";
+            }
+        }
+
+        function populateModal(university) {
+            // Populate slider
+            sliderImages.innerHTML = university.images.map(img => `<img src="/static/${img}" alt="${university.name}">`).join('');
+            currentImageIndex = 0;
+            updateSlider();
+
+            // Populate university details
+            const detailsContainer = document.querySelector(".university-details");
+            detailsContainer.innerHTML = `
+                <h2>${university.name}</h2>
+                <p><strong>City:</strong> ${university.city}</p>
+                <p><strong>Ranking:</strong> ${university.ranking}</p>
+                <p><strong>Founded:</strong> ${university.founded}</p>
+                <p><strong>Description:</strong> ${university.description}</p>
+                <p><strong>Subjects:</strong> ${university.subjects.join(', ')}</p>
+                <p><strong>Housing:</strong> ${university.housingInfo}</p>
+                <p><strong>Website:</strong> <a href="${university.website}" target="_blank">${university.website}</a></p>
+                <p><strong>Contact:</strong> ${university.contact}</p>
+                <div class="social-links">
+                    <a href="${university.socialMedia.facebook}" target="_blank">Facebook</a>
+                    <a href="${university.socialMedia.twitter}" target="_blank">Twitter</a>
+                    <a href="${university.socialMedia.instagram}" target="_blank">Instagram</a>
+                </div>
+            `;
+        }
+
+        function updateSlider() {
+            sliderImages.style.transform = `translateX(-${currentImageIndex * 100}%)`;
+        }
+
+        prevBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                updateSlider();
+            }
+        });
+
+        nextBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (currentImageIndex < sliderImages.children.length - 1) {
+                currentImageIndex++;
+                updateSlider();
+            }
+        });
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

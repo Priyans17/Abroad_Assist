@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {%load static%}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiffin Services | Abroad Assist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        :root {
+            --text-01: #45413E;
+            --light-01: #F9F9F9;
+            --light-02: #FFFFFF;
+            --brand-01: #DB7F67;
+            --brand-02: #F4CFC6;
+            --card-hover: 0px 8px 30px rgba(0, 0, 0, 0.12);
+            --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-timing: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            background: var(--light-01);
+            color: var(--text-01);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: var(--light-02);
+            box-shadow: var(--card-shadow);
+            padding: 2rem 1rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .sidebar-logo span {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu a {
+            text-decoration: none;
+            color: var(--text-01);
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: var(--brand-02);
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu .material-icons {
+            margin-right: 10px;
+        }
+
+        main {
+            margin-left: 250px;
+            padding: 2rem;
+            width: calc(100% - 250px);
+        }
+
+        #hero {
+            background: linear-gradient(135deg, var(--brand-02), var(--brand-01));
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            color: var(--light-02);
+        }
+
+        #hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        #hero p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--light-02);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-01);
+        }
+
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: var(--hover-timing);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--brand-01);
+            box-shadow: 0 0 0 2px rgba(219, 127, 103, 0.2);
+        }
+
+        button {
+            background: var(--text-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        button:hover {
+            background: var(--brand-01);
+            transform: translateY(-2px);
+        }
+
+        .tiffin-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .tiffin-card {
+            background: var(--light-02);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--hover-timing);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .tiffin-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tiffin-card:hover {
+            box-shadow: var(--card-hover);
+            transform: translateY(-5px);
+        }
+
+        .tiffin-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .tiffin-card-content {
+            padding: 1.5rem;
+        }
+
+        .tiffin-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-01);
+            margin-bottom: 0.5rem;
+        }
+
+        .tiffin-card p {
+            color: var(--text-01);
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .tiffin-card .price {
+            font-weight: 600;
+            color: var(--brand-01);
+        }
+
+        .tiffin-card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            color: var(--brand-01);
+            cursor: pointer;
+            transition: var(--hover-timing);
+            font-size: 1.5rem;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .view-details-btn {
+            background: var(--brand-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        .view-details-btn:hover {
+            background: var(--text-01);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .slider {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .slider-images {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slider-images img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .slider-nav.prev {
+            left: 10px;
+        }
+
+        .slider-nav.next {
+            right: 10px;
+        }
+
+        .tiffin-details h2 {
+            color: var(--brand-01);
+            margin-bottom: 10px;
+        }
+
+        .tiffin-details p {
+            margin-bottom: 10px;
+        }
+
+        .social-links {
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            margin-right: 10px;
+            color: var(--brand-01);
+            text-decoration: none;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        
+        .favorites-container {
+            background: var(--light-02);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .favorites-container h3 {
+            color: var(--brand-01);
+            margin-bottom: 1rem;
+        }
+
+        .favorites-list {
+            list-style-type: none;
+        }
+
+        .favorites-list li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-favorite {
+            background: none;
+            border: none;
+            color: var(--text-01);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .filter-container {
+                flex-direction: column;
+            }
+
+            .tiffin-list {
+                grid-template-columns: 1fr;
+            }
+
+            #hero h1 {
+                font-size: 2rem;
+            }
+
+            #hero p {
+                font-size: 1rem;
+            }
+        }
+        .sign-out {
+            margin-top: auto;
+            padding: 0.5rem;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sign-out:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://img.icons8.com/color/48/000000/airplane-mode-on--v1.png" alt="Airplane Logo">
+            <span>Abroad Assist</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard"><span class="material-icons">dashboard</span>Dashboard</a></li>
+            <li><a href="university-selection"><span class="material-icons">school</span>University Selection</a></li>
+            <li><a href="housing-options"><span class="material-icons">home</span>Housing Options</a></li>
+            <li><a href="travelexpense"><span class="material-icons">flight</span>Travel Expenses</a></li>
+            <li><a href="local ammenities"><span class="material-icons">location_city</span>Local Amenities</a></li>
+            <li><a href="tiffin" class="active"><span class="material-icons">restaurant</span>Tiffin Services</a></li>
+            <li><a href="health"><span class="material-icons">local_hospital</span>Healthcare</a></li>
+        </ul>
+        <a href="/logout" class="sign-out">Sign Out</a>
+    </aside>
+
+    <main>
+        <section id="hero">
+            <h1>Tiffin Services</h1>
+            <p>Find the best tiffin services near top UK universities</p>
+        </section>
+
+        <div id="map"></div>
+
+        <section id="favorites" class="favorites-container">
+            <h3>Your Favorites</h3>
+            <ul id="favorites-list" class="favorites-list"></ul>
+        </section>
+
+        <section id="tiffin-selection">
+            <h2>Tiffin Service Selection</h2>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="university">University:</label>
+                    <select id="university">
+                        <option value="">All Universities</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="cuisine">Cuisine Type:</label>
+                    <select id="cuisine">
+                        <option value="">All Types</option>
+                        <option value="veg">Vegetarian</option>
+                        <option value="non-veg">Non-Vegetarian</option>
+                        <option value="jain">Jain</option>
+                        <option value="vegan">Vegan</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="price">Max Price (£ per meal):</label>
+                    <select id="price">
+                        <option value="">Any Price</option>
+                        <option value="5">Up to £5</option>
+                        <option value="10">Up to £10</option>
+                        <option value="15">Up to £15</option>
+                    </select>
+                </div>
+                <button id="apply-filters">Apply Filters</button>
+            </div>
+            <div id="tiffin-list" class="tiffin-list">
+                <!-- Tiffin service cards will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <div id="tiffinModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="slider">
+                <div class="slider-images"></div>
+                <a href="#" class="slider-nav prev">&lt;</a>
+                <a href="#" class="slider-nav next">&gt;</a>
+            </div>
+            <div class="tiffin-details"></div>
+        </div>
+    </div>
+
+    <script>
+        const tiffinServices = [
+            {
+                name: "Homely Tiffin",
+                university: "University of Oxford",
+                cuisine: "veg",
+                price: 8,
+                rating: 4.5,
+                description: "Authentic vegetarian Indian meals delivered to your doorstep.",
+                location: { lat: 51.7548, lng: -1.2544 },
+                address: "123 High St, Oxford OX1 4AH",
+                contact: "+44 1865 123456",
+                website: "https://www.homelytiffin.com",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/homelytiffin",
+                    instagram: "https://www.instagram.com/homelytiffin"
+                },
+                menu: ["Dal Makhani", "Paneer Tikka", "Vegetable Biryani", "Aloo Gobi"],
+                image: "image26.png",
+                images: [
+                    "image27.png",
+                    "image28.png",
+                    "image29.jpg"
+                ]
+            },
+            {
+                name: "Spice Box",
+                university: "University of Cambridge",
+                cuisine: "non-veg",
+                price: 10,
+                rating: 4.7,
+                description: "Delicious non-vegetarian Indian cuisine for students and professionals.",
+                location: { lat: 52.2054, lng: 0.1132 },
+                address: "45 Hills Rd, Cambridge CB2 1NT",
+                contact: "+44 1223 987654",
+                website: "https://www.spicebox.com",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/spicebox",
+                    instagram: "https://www.instagram.com/spicebox"
+                },
+                menu: ["Butter Chicken", "Lamb Rogan Josh", "Chicken Biryani", "Fish Curry"],
+                image: "image25.png",
+                images: [
+                    "image24.png",
+                    "image23.png",
+                    "image22.png"
+                ]
+            },
+            {
+                name: "Jain Delight",
+                university: "Imperial College London",
+                cuisine: "jain",
+                price: 9,
+                rating: 4.6,
+                description: "Authentic Jain cuisine prepared with care and devotion.",
+                location: { lat: 51.4988, lng: -0.1749 },
+                address: "15 Exhibition Rd, South Kensington, London SW7 2PA",
+                contact: "+44 20 7123 4567",
+                website: "https://www.jaindelight.com",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/jaindelight",
+                    instagram: "https://www.instagram.com/jaindelight"
+                },
+                menu: ["Jain Dal", "Dry Fruit Curry", "Jain Pulao", "Fruit Raita"],
+                image: "image19.png",
+                images: [
+                    "image21.png",
+                    "image20.png",
+                    "image19.png"
+                ]
+            },
+            {
+                name: "Veggie Express",
+                university: "University College London",
+                cuisine: "veg",
+                price: 7,
+                rating: 4.4,
+                description: "Quick and healthy vegetarian meals for busy students.",
+                location: { lat: 51.5246, lng: -0.1340 },
+                address: "10 Gower St, London WC1E 6HJ",
+                contact: "+44 20 8765 4321",
+                website: "https://www.veggieexpress.co.uk",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/veggieexpress",
+                    instagram: "https://www.instagram.com/veggieexpress"
+                },
+                menu: ["Mixed Veg Curry", "Spinach and Chickpea Stew", "Vegetable Pasta", "Tofu Stir Fry"],
+                image: "image18.png",
+                images: [
+                    "image17.png",
+                    "image16.png",
+                    "image18.png"
+                ]
+            },
+            {
+                name: "Eco Eats",
+                university: "London School of Economics",
+                cuisine: "vegan",
+                price: 11,
+                rating: 4.6,
+                description: "Sustainable and delicious vegan meals for eco-conscious students.",
+                location: { lat: 51.5144, lng: -0.1165 },
+                address: "20 Kingsway, London WC2B 6LE",
+                contact: "+44 20 9876 5432",
+                website: "https://www.ecoeats.co.uk",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/ecoeats",
+                    instagram: "https://www.instagram.com/ecoeats"
+                },
+                menu: ["Jackfruit Burger", "Lentil Shepherd's Pie", "Vegan Mac and Cheese", "Avocado Toast"],
+                image: "image15.png",
+                images: [
+                    "image14.png",
+                    "image13.png",
+                    "image15.png"
+                ]
+            },
+            {
+                name: "Curry King",
+                university: "University of Manchester",
+                cuisine: "non-veg",
+                price: 9,
+                rating: 4.5,
+                description: "Authentic Indian curries with a modern twist.",
+                location: { lat: 53.4668, lng: -2.2339 },
+                address: "Oxford Rd, Manchester M13 9PL",
+                contact: "+44 161 234 5678",
+                website: "https://www.curryking.co.uk",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/curryking",
+                    instagram: "https://www.instagram.com/curryking"
+                },
+                menu: ["Chicken Tikka Masala", "Lamb Korma", "Prawn Jalfrezi", "Mixed Grill"],
+                image: "image12.png",
+                images: [
+                    "image11.png",
+                    "image10.png",
+                    "image12.png"
+                ]
+            },
+            {
+                name: "Green Leaf",
+                university: "University of Edinburgh",
+                cuisine: "vegan",
+                price: 8,
+                rating: 4.7,
+                description: "Fresh and innovative vegan dishes inspired by global cuisines.",
+                location: { lat: 55.9445, lng: -3.1892 },
+                address: "Old College, South Bridge, Edinburgh EH8 9YL",
+                contact: "+44 131 987 6543",
+                website: "https://www.greenleaf.co.uk",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/greenleaf",
+                    instagram: "https://www.instagram.com/greenleaf"
+                },
+                menu: ["Buddha Bowl", "Vegan Sushi Roll", "Quinoa Salad", "Mushroom Risotto"],
+                image: "image6.png",
+                images: [
+                    "image9.png",
+                    "image8.png",
+                    "image7.png"
+                ]
+            },
+            {
+                name: "Taste of Gujarat",
+                university: "King's College London",
+                cuisine: "veg",
+                price: 10,
+                rating: 4.8,
+                description: "Authentic Gujarati vegetarian cuisine with a home-cooked feel.",
+                location: { lat: 51.5115, lng: -0.1160 },
+                address: "Strand, London WC2R 2LS",
+                contact: "+44 20 1234 5678",
+                website: "https://www.tasteofgujarat.co.uk",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/tasteofgujarat",
+                    instagram: "https://www.instagram.com/tasteofgujarat"
+                },
+                menu: ["Dhokla", "Khandvi", "Undhiyu", "Gujarati Kadhi"],
+                image: "image4.png",
+                images: [
+                    "image5.png",
+                    "image4.png",
+                    "image6.png"
+                ]
+            },
+            {
+                name: "Fusion Bites",
+                university: "University of Bristol",
+                cuisine: "non-veg",
+                price: 12,
+                rating: 4.6,
+                description: "Innovative fusion cuisine combining Indian flavors with global ingredients.",
+                location: { lat: 51.4584, lng: -2.6030 },
+                address: "Tyndall Ave, Bristol BS8 1TH",
+                contact: "+44 117 987 6543",
+                website: "https://www.fusionbites.co.uk",
+                socialMedia: {
+                    facebook: "https://www.facebook.com/fusionbites",
+                    instagram: "https://www.instagram.com/fusionbites"
+                },
+                menu: ["Tandoori Chicken Tacos", "Curry Poutine", "Masala Fish and Chips", "Butter Chicken Pizza"],
+                image: "image1.png",
+                images: [
+                    "image2.png",
+                    "image3.png",
+                    "image1.png"
+                ]
+            }
+        ];
+
+        let map;
+        let markers = [];
+        let favorites = JSON.parse(localStorage.getItem('favoriteTiffin')) || [];
+
+        function initMap() {
+            map = L.map('map').setView([54.5, -4], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            tiffinServices.forEach(service => {
+                const marker = L.marker([service.location.lat, service.location.lng])
+                    .addTo(map)
+                    .bindPopup(service.name);
+                markers.push(marker);
+            });
+        }
+
+        function populateUniversities() {
+            const universitySelect = document.getElementById('university');
+            const universities = [...new Set(tiffinServices.map(service => service.university))];
+            universities.forEach(uni => {
+                const option = document.createElement('option');
+                option.value = uni;
+                option.textContent = uni;
+                universitySelect.appendChild(option);
+            });
+        }
+
+        function createTiffinCard(service) {
+            const card = document.createElement('div');
+            card.className = 'tiffin-card';
+            card.innerHTML = `
+                <img src="/static/${service.image}" alt="${service.name}">
+                <div class="tiffin-card-content">
+                    <h3>${service.name}</h3>
+                    <p>University: ${service.university}</p>
+                    <p>Cuisine: ${service.cuisine}</p>
+                    <p class="price">£${service.price} per meal</p>
+                    <p>Rating: ${service.rating}/5</p>
+                    <div class="tiffin-card-actions">
+                        <button class="favorite-btn" data-id="${service.name}">${favorites.includes(service.name) ? '❤️' : '🤍'}</button>
+                        <button class="view-details-btn" onclick="openModal('${service.name}')">View Details</button>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function filterAndDisplayTiffin() {
+            const university = document.getElementById('university').value;
+            const cuisine = document.getElementById('cuisine').value;
+            const price = parseInt(document.getElementById('price').value) || Infinity;
+
+            const filteredTiffin = tiffinServices.filter(service => 
+                (!university || service.university === university) &&
+                (!cuisine || service.cuisine === cuisine) &&
+                (service.price <= price)
+            );
+
+            const tiffinList = document.getElementById('tiffin-list');
+            tiffinList.innerHTML = '';
+            filteredTiffin.forEach((service, index) => {
+                const card = createTiffinCard(service);
+                tiffinList.appendChild(card);
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 100);
+            });
+
+            // Update map markers
+            markers.forEach(marker => {
+                const service = tiffinServices.find(s => s.name === marker.getPopup().getContent());
+                if (filteredTiffin.includes(service)) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            });
+        }
+
+        const modal = document.getElementById("tiffinModal");
+        const closeBtn =document.getElementsByClassName("close")[0];
+        const sliderImages = document.querySelector(".slider-images");
+        const prevBtn = document.querySelector(".slider-nav.prev");
+        const nextBtn = document.querySelector(".slider-nav.next");
+        let currentImageIndex = 0;
+
+        function openModal(tiffinName) {
+            const service = tiffinServices.find(s => s.name === tiffinName);
+            if (service) {
+                populateModal(service);
+                modal.style.display = "block";
+            }
+        }
+
+        function populateModal(service) {
+            // Populate slider
+            sliderImages.innerHTML = service.images.map(img => `<img src="/static/${img}" alt="${service.name}">`).join('');
+            currentImageIndex = 0;
+            updateSlider();
+
+            // Populate tiffin details
+            const detailsContainer = document.querySelector(".tiffin-details");
+            detailsContainer.innerHTML = `
+                <h2>${service.name}</h2>
+                <p><strong>University:</strong> ${service.university}</p>
+                <p><strong>Cuisine:</strong> ${service.cuisine}</p>
+                <p><strong>Price:</strong> £${service.price} per meal</p>
+                <p><strong>Rating:</strong> ${service.rating}/5</p>
+                <p><strong>Description:</strong> ${service.description}</p>
+                <p><strong>Menu:</strong> ${service.menu.join(', ')}</p>
+                <p><strong>Address:</strong> <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(service.address)}" target="_blank">${service.address}</a></p>
+                <p><strong>Contact:</strong> ${service.contact}</p>
+                <p><strong>Website:</strong> <a href="${service.website}" target="_blank">${service.website}</a></p>
+                <div class="social-links">
+                    <a href="${service.socialMedia.facebook}" target="_blank">Facebook</a>
+                    <a href="${service.socialMedia.instagram}" target="_blank">Instagram</a>
+                </div>
+            `;
+        }
+
+        function updateSlider() {
+            sliderImages.style.transform = `translateX(-${currentImageIndex * 100}%)`;
+        }
+
+        prevBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                updateSlider();
+            }
+        });
+
+        nextBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (currentImageIndex < sliderImages.children.length - 1) {
+                currentImageIndex++;
+                updateSlider();
+            }
+        });
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function updateFavorites(tiffinName) {
+            const index = favorites.indexOf(tiffinName);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(tiffinName);
+            }
+            localStorage.setItem('favoriteTiffin', JSON.stringify(favorites));
+            displayFavorites();
+        }
+
+        function displayFavorites() {
+            const favoritesList = document.getElementById('favorites-list');
+            favoritesList.innerHTML = '';
+            favorites.forEach(name => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    ${name}
+                    <button class="remove-favorite" data-id="${name}">×</button>
+                `;
+                favoritesList.appendChild(li);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('favorite-btn')) {
+                const tiffinName = e.target.getAttribute('data-id');
+                updateFavorites(tiffinName);
+                e.target.textContent = favorites.includes(tiffinName) ? '❤️' : '🤍';
+            }
+            if (e.target && e.target.classList.contains('remove-favorite')) {
+                const tiffinName = e.target.getAttribute('data-id');
+                updateFavorites(tiffinName);
+                filterAndDisplayTiffin(); // Refresh the tiffin list to update favorite buttons
+            }
+        });
+
+        document.getElementById('apply-filters').addEventListener('click', filterAndDisplayTiffin);
+
+        // Initialize everything
+        window.onload = function() {
+            initMap();
+            populateUniversities();
+            filterAndDisplayTiffin();
+            displayFavorites();
+        };
+    </script>
+</body>
+</html>

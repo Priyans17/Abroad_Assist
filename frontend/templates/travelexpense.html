@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {%load static%}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Travel Expenses | Abroad Assist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --text-01: #45413E;
+            --light-01: #F9F9F9;
+            --light-02: #FFFFFF;
+            --brand-01: #DB7F67;
+            --brand-02: #F4CFC6;
+            --card-hover: 0px 8px 30px rgba(0, 0, 0, 0.12);
+            --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-timing: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            background: var(--light-01);
+            color: var(--text-01);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: var(--light-02);
+            box-shadow: var(--card-shadow);
+            padding: 2rem 1rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .sidebar-logo span {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu a {
+            text-decoration: none;
+            color: var(--text-01);
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: var(--brand-02);
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu .material-icons {
+            margin-right: 10px;
+        }
+
+        main {
+            margin-left: 250px;
+            padding: 2rem;
+            width: calc(100% - 250px);
+        }
+
+        #hero {
+            background: linear-gradient(135deg, var(--brand-02), var(--brand-01));
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            color: var(--light-02);
+        }
+
+        #hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        #hero p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        .expense-container {
+            background: var(--light-02);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .expense-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .expense-card {
+            background: var(--light-02);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--hover-timing);
+        }
+
+        .expense-card:hover {
+            box-shadow: var(--card-hover);
+            transform: translateY(-5px);
+        }
+
+        .expense-card h3 {
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-01);
+            background: var(--brand-02);
+        }
+
+        .expense-card-content {
+            padding: 1.5rem;
+        }
+
+        .expense-card p {
+            margin-bottom: 0.5rem;
+        }
+
+        .currency-converter {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--brand-02);
+            border-radius: 12px;
+        }
+
+        .currency-converter h3 {
+            margin-bottom: 1rem;
+        }
+
+        .currency-converter input, .currency-converter select {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 1px solid var(--brand-01);
+            border-radius: 4px;
+        }
+
+        .currency-converter button {
+            background: var(--brand-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--hover-timing);
+        }
+
+        .currency-converter button:hover {
+            background: var(--text-01);
+        }
+
+        #real-time-clock {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+
+        #plane {
+            position: absolute;
+            width: 0px;
+            height: 50px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23DB7F67"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: transform 0.11s ease-in-out;
+        }
+
+        #travel-time-estimator {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--brand-02);
+            border-radius: 12px;
+        }
+
+        #travel-time-estimator h3 {
+            margin-bottom: 1rem;
+        }
+
+        #travel-time-estimator select, #travel-time-estimator button {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 1px solid var(--brand-01);
+            border-radius: 4px;
+        }
+
+        #travel-time-result {
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .expense-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .sign-out {
+            margin-top: auto;
+            padding: 0.5rem;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sign-out:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://img.icons8.com/color/48/000000/airplane-mode-on--v1.png" alt="Airplane Logo">
+            <span>Abroad Assist</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard"><span class="material-icons">dashboard</span>Dashboard</a></li>
+            <li><a href="university-selection"><span class="material-icons">school</span>University Selection</a></li>
+            <li><a href="housing-options"><span class="material-icons">home</span>Housing Options</a></li>
+            <li><a href="travelexpense" class="active"><span class="material-icons">flight</span>Travel Expenses</a></li>
+            <li><a href="local ammenities"><span class="material-icons">location_city</span>Local Amenities</a></li>
+            <li><a href="tiffin"><span class="material-icons">restaurant</span>Tiffin Services</a></li>
+            <li><a href="health"><span class="material-icons">local_hospital</span>Healthcare</a></li>  
+        </ul>
+        <a href="/logout" class="sign-out">Sign Out</a>
+    </aside>
+
+
+    <main>
+        <section id="hero">
+            <h1>Real-Time Travel Expenses for UK Universities</h1>
+            <p>Plan your budget for studying in the UK with our comprehensive and up-to-date travel expense guide.</p>
+        </section>
+
+        <div id="real-time-clock"></div>
+
+        <div id="flight-animation">
+            <div id="plane"></div>
+        </div>
+
+        <section id="flight-costs" class="expense-container">
+            <h2>Flight Costs</h2>
+            <div class="expense-grid">
+                <div class="expense-card">
+                    <h3>Delhi to London</h3>
+                    <div class="expense-card-content">
+                        <p>One-way: <span id="delhi-london-oneway">Loading...</span></p>
+                        <p>Round-trip: <span id="delhi-london-roundtrip">Loading...</span></p>
+                        <p>Peak season: June - August</p>
+                        <p>Off-peak season: January - March</p>
+                    </div>
+                </div>
+                <div class="expense-card">
+                    <h3>Mumbai to Manchester</h3>
+                    <div class="expense-card-content">
+                        <p>One-way: <span id="mumbai-manchester-oneway">Loading...</span></p>
+                        <p>Round-trip: <span id="mumbai-manchester-roundtrip">Loading...</span></p>
+                        <p>Peak season: July - September</p>
+                        <p>Off-peak season: November - February</p>
+                    </div>
+                </div>
+                <div class="expense-card">
+                    <h3>Bangalore to Edinburgh</h3>
+                    <div class="expense-card-content">
+                        <p>One-way: <span id="bangalore-edinburgh-oneway">Loading...</span></p>
+                        <p>Round-trip: <span id="bangalore-edinburgh-roundtrip">Loading...</span></p>
+                        <p>Peak season: June - August</p>
+                        <p>Off-peak season: January - March</p>
+                    </div>
+                </div>
+            </div>
+            <p><strong>Travel Tip:</strong> Book flights 2-3 months in advance for the best deals. Consider student discounts through STA Travel or Student Universe.</p>
+        </section>
+
+        <section id="visa-fees" class="expense-container">
+            <h2>Visa and Immigration Fees</h2>
+            <div class="expense-grid">
+                <div class="expense-card">
+                    <h3>Student Visa (Tier 4)</h3>
+                    <div class="expense-card-content">
+                        <p>Application fee: <span id="visa-fee">Loading...</span></p>
+                        <p>Healthcare surcharge: <span id="healthcare-surcharge">Loading...</span> per year</p>
+                    </div>
+                </div>
+                <div class="expense-card">
+                    <h3>Short-term Study Visa</h3>
+                    <div class="expense-card-content">
+                        <p>6 months: <span id="short-term-visa-6">Loading...</span></p>
+                        <p>11 months: <span id="short-term-visa-11">Loading...</span></p>
+                    </div>
+                </div>
+            </div>
+            <p><strong>Note:</strong> Visa fees are subject to change. Always check the official UK government website for the most up-to-date information.</p>
+        </section>
+
+        <section id="transportation" class="expense-container">
+            <h2>Transportation</h2>
+            <div class="expense-grid">
+                <div class="expense-card">
+                    <h3>Airport Transfer</h3>
+                    <div class="expense-card-content">
+                        <p>Taxi: <span id="airport-taxi">Loading...</span></p>
+                        <p>Train: <span id="airport-train">Loading...</span></p>
+                        <p>Bus: <span id="airport-bus">Loading...</span></p>
+                    </div>
+                </div>
+                <div class="expense-card">
+                    <h3>Local Transportation</h3>
+                    <div class="expense-card-content">
+                        <p>Monthly pass: <span id="local-monthly-pass">Loading...</span></p>
+                        <p>Single trip: <span id="local-single-trip">Loading...</span></p>
+                        <p>Student discount available in most cities</p>
+                    </div>
+                </div>
+                <div class="expense-card">
+                    <h3>Intercity Travel</h3>
+                    <div class="expense-card-content">
+                        <p>Train (with 16-25 Railcard): <span id="intercity-train">Loading...</span></p>
+                        <p>Bus: <span id="intercity-bus">Loading...</span></p>
+                        <p>Budget airlines: <span id="intercity-flight">Loading...</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="currency-converter" class="currency-converter">
+            <h3>Real-Time Currency Converter</h3>
+            <input type="number" id="amount" placeholder="Enter amount">
+            <select id="from-currency">
+                <option value="INR">Indian Rupee (INR)</option>
+                <option value="GBP">British Pound (GBP)</option>
+                <option value="USD">US Dollar (USD)</option>
+            </select>
+            <select id="to-currency">
+                <option value="GBP">British Pound (GBP)</option>
+                <option value="INR">Indian Rupee (INR)</option>
+                <option value="USD">US Dollar (USD)</option>
+            </select>
+            <button onclick="convertCurrency()">Convert</button>
+            <p id="result"></p>
+        </section>
+
+        <section id="travel-time-estimator">
+            <h3>Travel Time Estimator</h3>
+            <select id="from-city">
+                <option value="">Select departure city</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Bangalore">Bangalore</option>
+            </select>
+            <select id="to-city">
+                <option value="">Select destination city</option>
+                <option value="London">London</option>
+                <option value="Manchester">Manchester</option>
+                <option value="Edinburgh">Edinburgh</option>
+            </select>
+            <button onclick="estimateTravelTime()">Estimate Travel Time</button>
+            <p id="travel-time-result"></p>
+        </section>
+    </main>
+
+    <script>
+        // Real-time clock
+        function updateClock() {
+            const now = new Date();
+            const clockElement = document.getElementById('real-time-clock');
+            clockElement.textContent = now.toLocaleString('en-GB', { timeZone: 'Europe/London' }) + ' (UK Time)';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Flight animation
+        function animateFlight() {
+            const plane = document.getElementById('plane');
+            plane.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                plane.style.transition = 'none';
+                plane.style.transform = 'translateX(-100%)';
+                setTimeout(() => {
+                    plane.style.transition = 'transform 5s linear';
+                    plane.style.transform = 'translateX(100%)';
+                }, 50);
+            }, 5000);
+        }
+        setInterval(animateFlight, 5100);
+        animateFlight();
+
+        // Simulated API for flight costs (replace with actual API in production)
+        async function getFlightCosts() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        'delhi-london': { oneway: '£300 - £500', roundtrip: '£500 - £800' },
+                        'mumbai-manchester': { oneway: '£280 - £450', roundtrip: '£480 - £750' },
+                        'bangalore-edinburgh': { oneway: '£320 - £550', roundtrip: '£550 - £900' }
+                    });
+                }, 1000);
+            });
+        }
+
+        // Simulated API for visa fees (replace with actual API in production)
+        async function getVisaFees() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        'tier4': 348,
+                        'healthcare-surcharge': 470,
+                        'short-term-6': 97,
+                        'short-term-11': 186
+                    });
+                }, 1000);
+            });
+        }
+
+        // Simulated API for transportation costs (replace with actual API in production)
+        async function getTransportationCosts() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        'airport-taxi': '£40 - £100',
+                        'airport-train': '£10 - £30',
+                        'airport-bus': '£5 - £15',
+                        'local-monthly-pass': '£50 - £150',
+                        'local-single-trip': '£1.50 - £5',
+                        'intercity-train': '£20 - £100',
+                        'intercity-bus': '£10 - £40',
+                        'intercity-flight': '£30 - £100'
+                    });
+                }, 1000);
+            });
+        }
+
+        // Update flight costs
+        async function updateFlightCosts() {
+            const costs = await getFlightCosts();
+            document.getElementById('delhi-london-oneway').textContent = costs['delhi-london'].oneway;
+            document.getElementById('delhi-london-roundtrip').textContent = costs['delhi-london'].roundtrip;
+            document.getElementById('mumbai-manchester-oneway').textContent = costs['mumbai-manchester'].oneway;
+            document.getElementById('mumbai-manchester-roundtrip').textContent = costs['mumbai-manchester'].roundtrip;
+            document.getElementById('bangalore-edinburgh-oneway').textContent = costs['bangalore-edinburgh'].oneway;
+            document.getElementById('bangalore-edinburgh-roundtrip').textContent = costs['bangalore-edinburgh'].roundtrip;
+        }
+
+        // Update visa fees
+        async function updateVisaFees() {
+            const fees = await getVisaFees();
+            document.getElementById('visa-fee').textContent = `£${fees['tier4']}`;
+            document.getElementById('healthcare-surcharge').textContent = `£${fees['healthcare-surcharge']}`;
+            document.getElementById('short-term-visa-6').textContent = `£${fees['short-term-6']}`;
+            document.getElementById('short-term-visa-11').textContent = `£${fees['short-term-11']}`;
+        }
+
+        // Update transportation costs
+        async function updateTransportationCosts() {
+            const costs = await getTransportationCosts();
+            document.getElementById('airport-taxi').textContent = costs['airport-taxi'];
+            document.getElementById('airport-train').textContent = costs['airport-train'];
+            document.getElementById('airport-bus').textContent = costs['airport-bus'];
+            document.getElementById('local-monthly-pass').textContent = costs['local-monthly-pass'];
+            document.getElementById('local-single-trip').textContent = costs['local-single-trip'];
+            document.getElementById('intercity-train').textContent = costs['intercity-train'];
+            document.getElementById('intercity-bus').textContent = costs['intercity-bus'];
+            document.getElementById('intercity-flight').textContent = costs['intercity-flight'];
+        }
+
+        // Currency conversion (replace with actual API in production)
+        async function convertCurrency() {
+            const amount = document.getElementById('amount').value;
+            const fromCurrency = document.getElementById('from-currency').value;
+            const toCurrency = document.getElementById('to-currency').value;
+
+            // Simulated API call
+            const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${fromCurrency}`);
+            const data = await response.json();
+            const rate = data.rates[toCurrency];
+
+            const result = (amount * rate).toFixed(2);
+            document.getElementById('result').textContent = `${amount} ${fromCurrency} = ${result} ${toCurrency}`;
+        }
+
+        // Travel time estimation (replace with actual API in production)
+        async function estimateTravelTime() {
+            const fromCity = document.getElementById('from-city').value;
+            const toCity = document.getElementById('to-city').value;
+
+            if (!fromCity || !toCity) {
+                alert('Please select both departure and destination cities.');
+                return;
+            }
+
+            // Simulated API call
+            const travelTimes = {
+                'Delhi-London': '8 hours 30 minutes',
+                'Delhi-Manchester': '9 hours',
+                'Delhi-Edinburgh': '9 hours 30 minutes',
+                'Mumbai-London': '9 hours',
+                'Mumbai-Manchester': '9 hours 30 minutes',
+                'Mumbai-Edinburgh': '10 hours',
+                'Bangalore-London': '10 hours',
+                'Bangalore-Manchester': '10 hours 30 minutes',
+                'Bangalore-Edinburgh': '11 hours'
+            };
+
+            const route = `${fromCity}-${toCity}`;
+            const travelTime = travelTimes[route] || 'Not available';
+
+            document.getElementById('travel-time-result').textContent = `Estimated travel time from ${fromCity} to ${toCity}: ${travelTime}`;
+        }
+
+        // Initial data load
+        updateFlightCosts();
+        updateVisaFees();
+        updateTransportationCosts();
+    </script>
+</body>
+</html>

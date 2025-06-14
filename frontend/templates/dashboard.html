@@ -1,0 +1,904 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Abroad Assist - Dashboard</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <style>
+            :root {
+                --text-01: #45413E;
+                --light-01: #F9F9F9;
+                --light-02: #FFFFFF;
+                --brand-01: #DB7F67;
+                --brand-02: #F4CFC6;
+                --card-hover: 0px 8px 30px rgba(0, 0, 0, 0.12);
+                --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+                --hover-timing: all 0.3s ease;
+            }
+
+            * {
+                box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+            }
+
+            body {
+                font-family: 'Poppins', sans-serif;
+                font-weight: 400;
+                background: var(--light-01);
+                color: var(--text-01);
+                line-height: 1.6;
+                display: flex;
+            }
+
+            .sidebar {
+                width: 250px;
+                height: 100vh;
+                background: var(--light-02);
+                box-shadow: var(--card-shadow);
+                padding: 2rem 1rem;
+                position: fixed;
+                left: 0;
+                top: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sidebar-logo {
+                display: flex;
+                align-items: center;
+                margin-bottom: 2rem;
+            }
+
+            .sidebar-logo img {
+                width: 40px;
+                height: 40px;
+                margin-right: 10px;
+            }
+
+            .sidebar-logo span {
+                font-weight: 600;
+                font-size: 1.2rem;
+                color: var(--brand-01);
+            }
+
+            .sidebar-menu {
+                list-style-type: none;
+                flex-grow: 1;
+            }
+
+            .sidebar-menu li {
+                margin-bottom: 1rem;
+            }
+
+            .sidebar-menu a {
+                text-decoration: none;
+                color: var(--text-01);
+                display: flex;
+                align-items: center;
+                padding: 0.5rem;
+                border-radius: 5px;
+                transition: var(--hover-timing);
+            }
+
+            .sidebar-menu a:hover, .sidebar-menu a.active {
+                background: var(--brand-02);
+                color: var(--brand-01);
+            }
+
+            .sidebar-menu .material-icons {
+                margin-right: 10px;
+            }
+
+            main {
+                margin-left: 250px;
+                padding: 2rem;
+                width: calc(100% - 250px);
+            }
+
+            .welcome-message {
+                background: linear-gradient(135deg, var(--brand-02), var(--brand-01));
+                color: var(--light-02);
+                padding: 2rem;
+                border-radius: 12px;
+                margin-bottom: 2rem;
+                text-align: center;
+                animation: fadeIn 1s ease-out;
+            }
+
+            .welcome-message h1 {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 2rem;
+            }
+
+            .dashboard-card {
+                background: var(--light-02);
+                border-radius: 12px;
+                padding: 1.5rem;
+                box-shadow: var(--card-shadow);
+                transition: var(--hover-timing);
+                animation: slideUp 0.5s ease-out;
+            }
+
+            .dashboard-card:hover {
+                box-shadow: var(--card-hover);
+                transform: translateY(-5px);
+            }
+
+            .dashboard-card h2 {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+                color: var(--brand-01);
+            }
+
+            #map {
+                height: 450px;
+                width: 100%;
+                border-radius: 12px;
+            }
+
+            .chart-container {
+                position: relative;
+                height: 250px;
+            }
+
+            .gre-input {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .gre-input input {
+                flex: 1;
+                min-width: 60px;
+                padding: 0.5rem;
+                border: 1px solid var(--brand-02);
+                border-radius: 5px;
+                font-size: 1rem;
+                transition: var(--hover-timing);
+            }
+
+            .gre-input input:focus {
+                outline: none;
+                border-color: var(--brand-01);
+                box-shadow: 0 0 0 2px rgba(219, 127, 103, 0.2);
+            }
+
+            .gre-input button {
+                background-color: var(--brand-01);
+                color: white;
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: var(--hover-timing);
+            }
+
+            .gre-input button:hover {
+                background-color: var(--text-01);
+                transform: translateY(-2px);
+            }
+
+            .university-list {
+                list-style-type: none;
+                padding: 0;
+            }
+            .news-container {
+                max-height: 250px;
+                overflow-y: auto;
+            }
+
+            .news-item {
+                margin-bottom: 1rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid var(--brand-02);
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item h3 {
+                font-size: 0.9rem;
+                margin-bottom: 0.25rem;
+                color: var(--brand-01);
+            }
+
+            .news-item p {
+                font-size: 0.8rem;
+            }
+
+            .university-list li {
+                margin-bottom: 0.5rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem;
+                border-radius: 5px;
+                transition: var(--hover-timing);
+            }
+
+            .university-list li:hover {
+                background-color: var(--brand-02);
+            }
+
+            .shortlist-btn {
+                background-color: var(--brand-01);
+                color: white;
+                border: none;
+                padding: 0.3rem 0.7rem;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: var(--hover-timing);
+            }
+
+            .shortlist-btn:hover {
+                background-color: var(--text-01);
+                transform: scale(1.05);
+            }
+
+            .sign-out {
+                margin-top: auto;
+                padding: 0.5rem;
+                background: #000;
+                color: #fff;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: var(--hover-timing);
+            }
+
+            .sign-out:hover {
+                background: #333;
+                transform: translateY(-2px);
+            }
+
+            #about {
+                padding: 4rem 0;
+                background-color: var(--light-01);
+            }
+
+            .about-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 2rem;
+            }
+
+            .about-header {
+                text-align: center;
+                margin-bottom: 3rem;
+                animation: fadeIn 1s ease-out;
+            }
+
+            .about-header h2 {
+                font-size: 2.5rem;
+                color: var(--brand-01);
+                margin-bottom: 1rem;
+            }
+
+            .about-header p {
+                font-size: 1.1rem;
+                color: var(--text-01);
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2rem;
+                margin-bottom: 4rem;
+            }
+
+            .feature-card {
+                background-color: var(--light-02);
+                border-radius: 12px;
+                padding: 2rem;
+                box-shadow: var(--card-shadow);
+                transition: var(--hover-timing);
+                text-align: center;
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            .feature-card.animate {
+                animation: slideUp 0.5s ease-out forwards;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--card-hover);
+            }
+
+            .feature-card .material-icons {
+                font-size: 3rem;
+                color: var(--brand-01);
+                margin-bottom: 1rem;
+            }
+
+            .feature-card h3 {
+                font-size: 1.5rem;
+                color: var(--brand-01);
+                margin-bottom: 1rem;
+            }
+
+            .feature-card p {
+                font-size: 1rem;
+                color: var(--text-01);
+            }
+
+            .team-section {
+                background-color: var(--light-02);
+                padding: 4rem 0;
+                margin-top: 4rem;
+            }
+
+            .team-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 2rem;
+            }
+
+            .team-header {
+                text-align: center;
+                margin-bottom: 3rem;
+            }
+
+            .team-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+            }
+
+            .team-member {
+                background-color: var(--light-01);
+                border-radius: 12px;
+                padding: 2rem;
+                text-align: center;
+                transition: var(--hover-timing);
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            .team-member.animate {
+                animation: slideUp 0.5s ease-out forwards;
+            }
+
+            .team-member:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--card-hover);
+            }
+
+            .team-member img {
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-bottom: 1rem;
+            }
+
+            .testimonials {
+                background-color: var(--brand-02);
+                padding: 4rem 0;
+                margin-top: 4rem;
+            }
+
+            .testimonial-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 2rem;
+            }
+
+            .testimonial-header {
+                text-align: center;
+                margin-bottom: 3rem;
+            }
+
+            .testimonial-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 2rem;
+            }
+
+            .testimonial-card {
+                background-color: var(--light-02);
+                border-radius: 12px;
+                padding: 2rem;
+                box-shadow: var(--card-shadow);
+                transition: var(--hover-timing);
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            .testimonial-card.animate {
+                animation: slideUp 0.5s ease-out forwards, pulse 2s infinite;
+            }
+
+            .testimonial-card:hover {
+                transform: translateY(-5px) scale(1.03);
+                box-shadow: var(--card-hover);
+            }
+
+            .testimonial-card img {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                margin-bottom: 1rem;
+            }
+
+            .testimonial-card p {
+                font-style: italic;
+                margin-bottom: 1rem;
+            }
+
+            .testimonial-card .name {
+                font-weight: bold;
+                color: var(--brand-01);
+            }
+
+            #contact-us {
+                background-color: var(--light-02);
+                padding: 4rem 0;
+            }
+
+            .contact-container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 0 2rem;
+            }
+
+            .contact-header {
+                text-align: center;
+                margin-bottom: 3rem;
+            }
+
+            .contact-form {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .contact-form input,
+            .contact-form textarea {
+                width: 100%;
+                padding: 0.5rem;
+                border: 1px solid var(--brand-02);
+                border-radius: 5px;
+                font-size: 1rem;
+                transition: var(--hover-timing);
+            }
+
+            .contact-form input:focus,
+            .contact-form textarea:focus {
+                outline: none;
+                border-color: var(--brand-01);
+                box-shadow: 0 0 0 2px rgba(219, 127, 103, 0.2);
+            }
+
+            .contact-form button {
+                background-color: var(--brand-01);
+                color: white;
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 1rem;
+                transition: var(--hover-timing);
+            }
+
+            .contact-form button:hover {
+                background-color: var(--text-01);
+                transform: translateY(-2px);
+            }
+
+            #terms-conditions {
+                background-color: var(--light-02);
+                padding: 2rem;
+                margin-top: 4rem;
+                border-radius: 12px;
+                box-shadow: var(--card-shadow);
+            }
+
+            #terms-conditions h2 {
+                color: var(--brand-01);
+                margin-bottom: 1rem;
+            }
+
+            #terms-conditions ol {
+                padding-left: 1.5rem;
+            }
+
+            #terms-conditions li {
+                margin-bottom: 0.5rem;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes slideUp {
+                from { 
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(219, 127, 103, 0.4);
+                }
+                70% {
+                    box-shadow: 0 0 0 10px rgba(219, 127, 103, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(219, 127, 103, 0);
+                }
+            }
+
+            @media (max-width: 768px) {
+                .sidebar {
+                    width: 100%;
+                    height: auto;
+                    position: relative;
+                }
+
+                main {
+                    margin-left: 0;
+                    width: 100%;
+                }
+
+                .features-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="https://img.icons8.com/color/48/000000/airplane-mode-on--v1.png" alt="Airplane Logo">
+                <span>Abroad Assist</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><span class="material-icons">dashboard</span>Dashboard</a></li>  
+                <li><a href="university-selection"><span class="material-icons">school</span>University Selection</a></li>
+                <li><a href="housing-options"><span class="material-icons">home</span>Housing Options</a></li>
+                <li><a href="travelexpense"><span class="material-icons">flight</span>Travel Expenses</a></li>
+                <li><a href="local ammenities"><span class="material-icons">location_city</span>Local Amenities</a></li>
+                <li><a href="tiffin"><span class="material-icons">restaurant</span>Tiffin Services</a></li>
+                <li><a href="health"><span class="material-icons">local_hospital</span>Healthcare</a></li>
+            </ul>
+            <a href="/logout" class="sign-out">Sign Out</a>
+        </aside>
+
+        
+        <main>
+            <section id="dashboard">
+                <div class="welcome-message">
+                    <h1>Welcome to Abroad Assist</h1>
+                    <p>Your one-stop solution for studying abroad in the UK</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h2>Top UK Universities</h2>
+                        <div id="map"></div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h2>GBP to INR Exchange Rate</h2>
+                        <div class="chart-container">
+                            <canvas id="exchange-rate-chart"></canvas>
+                        </div>
+                        <p id="current-rate"></p>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h2>Latest University News</h2>
+                        <div id="news-container"></div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h2>GRE Score Input</h2>
+                        <div class="gre-input">
+                            <input type="number" id="gre-verbal" placeholder="Verbal Score">
+                            <input type="number" id="gre-quant" placeholder="Quantitative Score">
+                            <input type="number" id="gre-awa" placeholder="AWA Score" step="0.5">
+                            <button onclick="updateUniversityList()">Update Recommendations</button>
+                        </div>
+                        <div id="gre-matches"></div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h2>University Recommendations</h2>
+                        <ul class="university-list" id="university-list"></ul>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="about">
+                <div class="about-container">
+                    <div class="about-header">
+                        <h2>About Abroad Assist</h2>
+                        <p>Empowering Indian students to pursue their dreams of studying abroad in the UK</p>
+                    </div>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <span class="material-icons">school</span>
+                            <h3>University Selection</h3>
+                            <p>Find the perfect university based on your GRE scores, preferences, and career goals.</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="material-icons">home</span>
+                            <h3>Housing Options</h3>
+                            <p>Explore on-campus and off-campus housing solutions tailored to your budget and lifestyle.</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="material-icons">flight</span>
+                            <h3>Travel Assistance</h3>
+                            <p>Get comprehensive help with travel planning, visa applications, and cost estimates.</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="material-icons">location_city</span>
+                            <h3>Local Amenities</h3>
+                            <p>Discover essential services, Indian communities, and cultural resources at your destination.</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="material-icons">restaurant</span>
+                            <h3>Tiffin Services</h3>
+                            <p>Find nearby tiffin services with delivery or carry-out options for authentic Indian cuisine.</p>
+                        </div>
+                        <div class="feature-card">
+                            <span class="material-icons">local_hospital</span>
+                            <h3>Healthcare Support</h3>
+                            <p>Access information on health insurance, medical facilities, and mental health resources.</p>
+                        </div>
+                    </div>
+                </div>
+        
+            <section class="team-section">
+                <div class="team-container">
+                    <div class="team-header">
+                        <h2>Meet Our Team</h2>
+                        <p>Dedicated professionals committed to your success</p>
+                    </div>
+                    <div class="team-grid">
+                        <div class="team-member">
+                            <img src="/static/Priyans.jpg" alt="Priyans Mehta">
+                            <h3>Priyans Mehta</h3>
+                            <p>Full-Stack Developer</p>
+                        </div>
+                        <div class="team-member">
+                            <img src="/static/lavanya.jpg" alt="Lavanya Bhilare">
+                            <h3>Lavanya Bhilare</h3>
+                            <p>Front-End Developer</p>
+                        </div>
+                        <div class="team-member">
+                            <img src="/static/edel.jpg" alt="Edel Dsouza">
+                            <h3>Edel Dsouza</h3>
+                            <p>Design and UI</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="testimonials">
+                <div class="testimonial-container">
+                    <div class="testimonial-header">
+                        <h2>What Our Students Say</h2>
+                        <p>Real experiences from students who've used Abroad Assist</p>
+                    </div>
+                    <div class="testimonial-grid">
+                        <div class="testimonial-card">
+                            <p>"Abroad Assist made my dream of studying in the UK a reality. Their guidance was invaluable throughout the entire process."</p>
+                            <span class="name">Rahul Sharma</span>
+                        </div>
+                        <div class="testimonial-card">
+                            <p>"I couldn't have navigated the complex application process without Abroad Assist. They were there every step of the way!"</p>
+                            <span class="name">Priya Patel</span>
+                        </div>
+                        <div class="testimonial-card">
+                            <p>"The personalized support and resources provided by Abroad Assist were game-changers in my journey to study in the UK."</p>
+                            <span class="name">Amit Kumar</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="terms-conditions">
+                <h2>Terms & Conditions</h2>
+            
+                <ol>
+                    <li>The information provided on this platform is for general informational purposes only.</li>
+                    <li>We do not guarantee the accuracy, completeness, or usefulness of this information.</li>
+                    <li>The use of any information or materials on this website is entirely at your own risk.</li>
+                    <li>We are not responsible for any actions you take based on the information provided on this platform.</li>
+                    <li>We reserve the right to modify or discontinue any aspect of our service at any time without notice.</li>
+                </ol>
+            </section>
+        </main>
+
+        <script>
+            // Top UK Universities Map
+            const map = L.map('map').setView([54.5, -4], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            }).addTo(map);
+    
+            const universities = [
+                { name: "University of Oxford", lat: 51.7548, lon: -1.2544 },
+                { name: "University of Cambridge", lat: 52.2054, lon: 0.1132 },
+                { name: "Imperial College London", lat: 51.4988, lon: -0.1749 },
+                { name: "University College London", lat: 51.5246, lon: -0.1340 },
+                { name: "University of Edinburgh", lat: 55.9445, lon: -3.1892 },
+                { name: "University of Manchester", lat: 53.4668, lon: -2.2339 },
+                { name: "King's College London", lat: 51.5115, lon: -0.1160 },
+                { name: "London School of Economics", lat: 51.5144, lon: -0.1165 },
+                { name: "University of Bristol", lat: 51.4584, lon: -2.6030 },
+                { name: "University of Warwick", lat: 52.3793, lon: -1.5615 }
+            ];
+    
+            universities.forEach(uni => {
+                L.marker([uni.lat, uni.lon]).addTo(map)
+                    .bindPopup(uni.name);
+            });
+    
+            // Exchange Rate Chart
+            const ctx = document.getElementById('exchange-rate-chart').getContext('2d');
+            let exchangeRateData = {
+                labels: [],
+                datasets: [{
+                    label: 'GBP to INR',
+                    data: [],
+                    borderColor: '#DB7F67',
+                    tension: 0.1
+                }]
+            };
+    
+            let exchangeRateChart = new Chart(ctx, {
+                type: 'line',
+                data: exchangeRateData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+    
+            // Function to fetch real-time exchange rate
+            async function fetchExchangeRate() {
+                try {
+                    const response = await fetch('https://api.exchangerate-api.com/v4/latest/GBP');
+                    const data = await response.json();
+                    return data.rates.INR;
+                } catch (error) {
+                    console.error('Error fetching exchange rate:', error);
+                    return null;
+                }
+            }
+    
+            // Function to update exchange rate chart
+            async function updateExchangeRate() {
+                const now = new Date();
+                const label = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+                const rate = await fetchExchangeRate();
+    
+                if (rate) {
+                    exchangeRateData.labels.push(label);
+                    exchangeRateData.datasets[0].data.push(rate);
+    
+                    if (exchangeRateData.labels.length > 10) {
+                        exchangeRateData.labels.shift();
+                        exchangeRateData.datasets[0].data.shift();
+                    }
+    
+                    exchangeRateChart.update();
+                    document.getElementById('current-rate').textContent = `Current Rate: 1 GBP = ${rate.toFixed(2)} INR`;
+                }
+            }
+    
+            // Initial update
+            updateExchangeRate();
+    
+            // Update every 30 seconds
+            setInterval(updateExchangeRate, 5000);
+    
+            // Latest University News
+            const newsContainer = document.getElementById('news-container');
+            const news = [
+                { title: "Oxford University Announces New Scholarship Program", content: "Oxford University has launched a new scholarship program for Indian students, offering full tuition and living expenses for up to 5 exceptional candidates each year." },
+                { title: "Cambridge University to Host International AI Conference", content: "Cambridge University is set to host a major international conference on Artificial Intelligence, bringing together leading researchers and industry experts from around the world." },
+                { title: "Imperial College London Unveils State-of-the-Art Research Facility", content: "Imperial College London has opened a cutting-edge research facility dedicated to tackling global challenges in energy, environment, and healthcare." },
+            ];
+            function updateNews() {
+                newsContainer.innerHTML = '';
+                news.forEach(item => {
+                    const newsItem = document.createElement('div');
+                    newsItem.className = 'news-item';
+                    newsItem.innerHTML = `
+                        <h3>${item.title}</h3>
+                        <p>${item.content}</p>
+                    `;
+                    newsContainer.appendChild(newsItem);
+                });
+            }
+    
+            updateNews();
+            setInterval(() => {
+                news.push(news.shift()); // Rotate news items
+                updateNews();
+            }, 120000); // Update every 2 minutes
+    
+            // University recommendations
+            const universityList = document.getElementById('university-list');
+            const recommendedUniversities = [
+                { name: 'University of Oxford', score: 330 },
+                { name: 'University of Cambridge', score: 328 },
+                { name: 'Imperial College London', score: 325 },
+                { name: 'University College London', score: 320 },
+                { name: 'University of Edinburgh', score: 318 },
+                { name: 'University of Manchester', score: 315 },
+                { name: 'King\'s College London', score: 312 },
+                { name: 'London School of Economics', score: 310 },
+                { name: 'University of Bristol', score: 308 },
+                { name: 'University of Warwick', score: 305 }
+            ];
+    
+            function updateUniversityList() {
+                const verbalScore = parseInt(document.getElementById('gre-verbal').value) || 0;
+                const quantScore = parseInt(document.getElementById('gre-quant').value) || 0;
+                const awaScore = parseFloat(document.getElementById('gre-awa').value) || 0;
+                const totalScore = verbalScore + quantScore;
+    
+                universityList.innerHTML = '';
+                recommendedUniversities.forEach(uni => {
+                    if (totalScore >= uni.score) {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            ${uni.name} (Required: ${uni.score})
+                            <button class="shortlist-btn">Shortlist</button>
+                        `;
+                        universityList.appendChild(li);
+                    }
+                });
+            }
+    
+            // Animate features on scroll
+            function animateOnScroll() {
+                const elements = document.querySelectorAll('.feature-card, .team-member, .testimonial-card');
+                elements.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                    if (rect.top <= windowHeight * 0.75) {
+                        el.classList.add('animate');
+                    }
+                });
+            }
+    
+            window.addEventListener('scroll', animateOnScroll);
+            animateOnScroll(); // Initial check on page load
+            </script>
+    </body>
+    </html>

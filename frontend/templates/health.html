@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Services - Abroad Assist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        :root {
+            --text-01: #45413E;
+            --light-01: #F9F9F9;
+            --light-02: #FFFFFF;
+            --brand-01: #DB7F67;
+            --brand-02: #F4CFC6;
+            --card-hover: 0px 8px 30px rgba(0, 0, 0, 0.12);
+            --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-timing: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            background: var(--light-01);
+            color: var(--text-01);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: var(--light-02);
+            box-shadow: var(--card-shadow);
+            padding: 2rem 1rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .sidebar-logo span {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-menu a {
+            text-decoration: none;
+            color: var(--text-01);
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: var(--brand-02);
+            color: var(--brand-01);
+        }
+
+        .sidebar-menu .material-icons {
+            margin-right: 10px;
+        }
+
+        main {
+            margin-left: 250px;
+            padding: 2rem;
+            width: calc(100% - 250px);
+        }
+
+        #hero {
+            background: linear-gradient(135deg, var(--brand-02), var(--brand-01));
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 3rem;
+            color: var(--light-02);
+        }
+
+        #hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        #hero p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--text-01);
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .health-services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .health-card {
+            background: var(--light-02);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--hover-timing);
+        }
+
+        .health-card:hover {
+            box-shadow: var(--card-hover);
+            transform: translateY(-5px);
+        }
+
+        .health-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .health-card-content {
+            padding: 1.5rem;
+        }
+
+        .health-card h3 {
+            color: var(--brand-01);
+            margin-bottom: 0.5rem;
+        }
+
+        .health-card p {
+            margin-bottom: 0.5rem;
+        }
+
+        .health-card button {
+            background: var(--text-01);
+            color: var(--light-02);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--hover-timing);
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .health-card button:hover {
+            background: var(--brand-01);
+        }
+
+        .emergency-info {
+            background: var(--brand-02);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .emergency-info h2 {
+            color: var(--brand-01);
+            margin-bottom: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .health-services {
+                grid-template-columns: 1fr;
+            }
+
+            #hero h1 {
+                font-size: 2rem;
+            }
+
+            #hero p {
+                font-size: 1rem;
+            }
+        }
+        .sign-out {
+            margin-top: auto;
+            padding: 0.5rem;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: var(--hover-timing);
+        }
+
+        .sign-out:hover {
+            background: #333;
+        }
+
+        .map-view-btn {
+            background-color: var(--brand-01);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 15px;
+            text-decoration: none;
+        }
+
+        .map-view-btn:hover {
+            background-color: var(--text-01);
+        }
+
+        .map-view-btn .material-icons {
+            margin-right: 5px;
+            font-size: 18px;
+        }
+    </style>    
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://img.icons8.com/color/48/000000/airplane-mode-on--v1.png" alt="Airplane Logo">
+            <span>Abroad Assist</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard"><span class="material-icons">dashboard</span>Dashboard</a></li>
+            <li><a href="university-selection"><span class="material-icons">school</span>University Selection</a></li>
+            <li><a href="housing-options"><span class="material-icons">home</span>Housing Options</a></li>
+            <li><a href="travelexpense"><span class="material-icons">flight</span>Travel Expenses</a></li>
+            <li><a href="local ammenities"><span class="material-icons">location_city</span>Local Amenities</a></li>
+            <li><a href="tiffin"><span class="material-icons">restaurant</span>Tiffin Services</a></li>
+            <li><a href="health" class="active"><span class="material-icons">local_hospital</span>Healthcare</a></li>
+        </ul>
+        <a href="/logout" class="sign-out">Sign Out</a>
+    </aside>
+
+    <main>
+        <section id="hero">
+            <h1>Health Services for International Students</h1>
+            <p>Find medical facilities and health resources near top UK universities</p>
+        </section>
+
+        <div id="map"></div>
+
+        <section class="health-services" id="health-services">
+            <!-- Health service cards will be dynamically added here -->
+        </section>
+
+        <section class="emergency-info">
+            <h2>Emergency Information</h2>
+            <p><strong>Emergency number:</strong> 999 (for police, fire, or ambulance)</p>
+            <p><strong>Non-emergency medical advice:</strong> Call 111</p>
+            <p><strong>NHS website:</strong> <a href="https://www.nhs.uk" target="_blank">www.nhs.uk</a></p>
+        </section>
+    </main>
+
+    <div id="hospitalModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="hospital-details"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([54.5, -4], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Health services data
+        const healthServices = [
+            {
+                name: "John Radcliffe Hospital",
+                type: "Public",
+                lat: 51.7636,
+                lon: -1.2180,
+                university: "University of Oxford",
+                description: "Major teaching hospital and trauma center",
+                address: "Headley Way, Headington, Oxford OX3 9DU",
+                phone: "+44 (0)300 304 7777",
+                website: "https://www.ouh.nhs.uk/hospitals/jr/",
+                specialties: ["Emergency Care", "Neurosciences", "Cardiac Services"],
+                image: "h1.jpg"
+            },
+            {
+                name: "Addenbrooke Hospital",
+                type: "Public",
+                lat: 52.1752,
+                lon: 0.1418,
+                university: "University of Cambridge",
+                description: "Internationally renowned teaching hospital and research center",
+                address: "Hills Rd, Cambridge CB2 0QQ",
+                phone: "+44 (0)1223 245151",
+                website: "https://www.cuh.nhs.uk/",
+                specialties: ["Cancer Care", "Transplants", "Neurosciences"],
+                image: "h2.jpg"
+            },
+            {
+                name: "St Mary Hospital",
+                type: "Public",
+                lat: 51.5174,
+                lon: -0.1745,
+                university: "Imperial College London",
+                description: "Major acute hospital and part of Imperial College Healthcare NHS Trust",
+                address: "Praed St, Paddington, London W2 1NY",
+                phone: "+44 (0)20 3312 6666",
+                website: "https://www.imperial.nhs.uk/our-locations/st-marys-hospital",
+                specialties: ["Major Trauma", "Stroke Care", "Maternity Services"],
+                image: "h3.jpg"
+            },
+            {
+                name: "University College Hospital",
+                type: "Public",
+                lat: 51.5248,
+                lon: -0.1357,
+                university: "University College London",
+                description: "Major teaching hospital in central London",
+                address: "235 Euston Rd, London NW1 2BU",
+                phone: "+44 (0)20 3456 7890",
+                website: "https://www.uclh.nhs.uk/",
+                specialties: ["Cancer Care", "Women's Health", "Neurology"],
+                image: "h4.jpg"
+            },
+            {
+                name: "Royal Infirmary of Edinburgh",
+                type: "Public",
+                lat: 55.9217,
+                lon: -3.1383,
+                university: "University of Edinburgh",
+                description: "Major acute teaching hospital",
+                address: "51 Little France Crescent, Edinburgh EH16 4SA",
+                phone: "+44 (0)131 536 1000",
+                website: "https://www.nhslothian.scot.nhs.uk/GoingToHospital/Locations/RIE/Pages/default.aspx",
+                specialties: ["Emergency Medicine", "Cardiology", "Renal Medicine"],
+                image: "h5.jpg"
+            },
+            {
+                name: "Manchester Royal Infirmary",
+                type: "Public",
+                lat: 53.4625,
+                lon: -2.2285,
+                university: "University of Manchester",
+                description: "Teaching hospital in central Manchester",
+                address: "Oxford Rd, Manchester M13 9WL",
+                phone: "+44 (0)161 276 1234",
+                website: "https://mft.nhs.uk/mri/",
+                specialties: ["Renal Transplant", "Cardiology", "Haematology"],
+                image: "h6.jpg"
+            },
+            {
+                name: "The London Clinic",
+                type: "Private",
+                lat: 51.5207,
+                lon: -0.1483,
+                university: "University College London",
+                description: "One of the UK's largest private hospitals",
+                address: "20 Devonshire Pl, Marylebone, London W1G 6BW",
+                phone: "+44 (0)20 3613 9162",
+                website: "https://www.thelondonclinic.co.uk/",
+                specialties: ["Cancer Care", "Orthopaedics", "Digestive Health"],
+                image: "h7.jpg"
+            },
+            {
+                name: "Nuffield Health Cambridge Hospital",
+                type: "Private",
+                lat: 52.2080,
+                lon: 0.1339,
+                university: "University of Cambridge",
+                description: "Leading private hospital in Cambridge",
+                address: "4 Trumpington Rd, Cambridge CB2 8AF",
+                phone: "+44 (0)1223 370922",
+                website: "https://www.nuffieldhealth.com/hospitals/cambridge",
+                specialties: ["Orthopaedics", "Cosmetic Surgery", "Physiotherapy"],
+                image: "h8.jpg"
+            },
+            {
+                name: "Spire Manchester Hospital",
+                type: "Private",
+                lat: 53.4214,
+                lon: -2.2251,
+                university: "University of Manchester",
+                description: "Modern private hospital in Manchester",
+                address: "170 Barlow Moor Rd, Manchester M20 2AF",
+                phone: "+44 (0)161 447 6677",
+                website: "https://www.spirehealthcare.com/spire-manchester-hospital/",
+                specialties: ["Sports Medicine", "Cardiology", "Oncology"],
+                image: "h9.png"
+            }
+        ];
+
+        // Add markers to the map
+        healthServices.forEach(service => {
+            L.marker([service.lat, service.lon]).addTo(map)
+                .bindPopup(`<b>${service.name}</b><br>${service.description}<br>Near: ${service.university}`);
+        });
+
+        // Function to create health service cards
+        function createHealthCard(service) {
+            return `
+                <div class="health-card">
+                    <img src="/static/${service.image}" alt="${service.name}">
+                    <div class="health-card-content">
+                        <h3>${service.name}</h3>
+                        <p>${service.description}</p>
+                        <p>Type: ${service.type}</p>
+                        <p>Near: ${service.university}</p>
+                        <button onclick="openModal('${service.name}')">View Details</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Populate health services
+        const healthServicesContainer = document.getElementById('health-services');
+        healthServices.forEach(service => {
+            healthServicesContainer.innerHTML += createHealthCard(service);
+        });
+
+        // Modal functionality
+        const modal = document.getElementById("hospitalModal");
+        const closeBtn = document.getElementsByClassName("close")[0];
+
+        function openModal(hospitalName) {
+            const hospital = healthServices.find(h => h.name === hospitalName);
+            if (hospital) {
+                const detailsContainer = document.getElementById("hospital-details");
+                detailsContainer.innerHTML = `
+                    <h2>${hospital.name}</h2>
+                    <p><strong>Type:</strong> ${hospital.type}</p>
+                    <p><strong>Description:</strong> ${hospital.description}</p>
+                    <p><strong>Address:</strong> ${hospital.address}</p>
+                    <p><strong>Phone:</strong> ${hospital.phone}</p>
+                    <p><strong>Website:</strong> <a href="${hospital.website}" target="_blank">${hospital.website}</a></p>
+                    <p><strong>Specialties:</strong> ${hospital.specialties.join(", ")}</p>
+                    <p><strong>Near:</strong> ${hospital.university}</p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=${hospital.lat},${hospital.lon}" target="_blank" class="map-view-btn">
+                        <span class="material-icons">map</span>
+                        View on Map
+                    </a>
+                `;
+                modal.style.display = "block";
+            }
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
